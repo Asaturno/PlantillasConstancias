@@ -1,115 +1,98 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
-import os
 
-DB_PATH = os.path.join("data", "constancias.db")
-
-class GestionEventos(tk.Toplevel):
+class GestorEventos(tk.Toplevel):
     def __init__(self, master=None):
         super().__init__(master)
         self.title("Gestión de Eventos")
-        self.geometry("600x400")
-        self.resizable(False, False)
-
+        self.geometry("400x400")
+        self.conn = sqlite3.connect("data/constancias.db")
+        self.cursor = self.conn.cursor()
         self._build_ui()
-        self._load_eventos()
+        self._cargar_eventos()
+        self.modo_edicion = False
+        self.registro_id = None
 
     def _build_ui(self):
-        columns = ("ID", "Nombre", "Fecha")
-        self.tree = ttk.Treeview(self, columns=columns, show="headings")
-        for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=180)
-        self.tree.pack(pady=10)
+        frame = ttk.Frame(self)
+        frame.pack(padx=10, pady=10, fill=tk.X)
 
-        form_frame = tk.Frame(self)
-        form_frame.pack(pady=10)
+        ttk.Label(frame, text="Nombre del evento:").pack()
+        self.nombre_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=self.nombre_var).pack(fill=tk.X)
 
-        tk.Label(form_frame, text="Nombre:").grid(row=0, column=0)
-        self.nombre_entry = tk.Entry(form_frame)
-        self.nombre_entry.grid(row=0, column=1, padx=5)
+        ttk.Label(frame, text="Fecha (dd/mm/aaaa):").pack()
+        self.fecha_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=self.fecha_var).pack(fill=tk.X)
 
-        tk.Label(form_frame, text="Fecha (YYYY-MM-DD):").grid(row=1, column=0)
-        self.fecha_entry = tk.Entry(form_frame)
-        self.fecha_entry.grid(row=1, column=1, padx=5)
+        self.btn_agregar = ttk.Button(frame, text="Agregar", command=self._guardar_evento)
+        self.btn_agregar.pack(pady=10)
 
-        btn_frame = tk.Frame(self)
-        btn_frame.pack()
+        self.lista = tk.Listbox(self)
+        self.lista.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        ttk.Button(btn_frame, text="Agregar", command=self.agregar_evento).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Editar", command=self.editar_evento).grid(row=0, column=1, padx=5)
-        ttk.Button(btn_frame, text="Eliminar", command=self.eliminar_evento).grid(row=0, column=2, padx=5)
-        ttk.Button(btn_frame, text="Actualizar", command=self._load_eventos).grid(row=0, column=3, padx=5)
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=5)
 
-        self.tree.bind("<<TreeviewSelect>>", self._cargar_datos_seleccionados)
+        ttk.Button(btn_frame, text="Editar", command=self._editar_evento).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Eliminar", command=self._eliminar_evento).pack(side=tk.LEFT, padx=5)
 
-    def _load_eventos(self):
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, nombre, fecha FROM eventos")
-        for evento in cursor.fetchall():
-            self.tree.insert("", "end", values=evento)
-        conn.close()
-
-    def agregar_evento(self):
-        nombre = self.nombre_entry.get().strip()
-        fecha = self.fecha_entry.get().strip()
-
+    def _guardar_evento(self):
+        nombre = self.nombre_var.get().strip()
+        fecha = self.fecha_var.get().strip()
         if not nombre or not fecha:
-            messagebox.showwarning("Campos vacíos", "Por favor complete todos los campos.")
+            messagebox.showwarning("Campos vacíos", "Debes ingresar nombre y fecha.")
             return
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO eventos (nombre, fecha) VALUES (?, ?)", (nombre, fecha))
-        conn.commit()
-        conn.close()
-
-        self._load_eventos()
-        self.nombre_entry.delete(0, tk.END)
-        self.fecha_entry.delete(0, tk.END)
-
-    def editar_evento(self):
-        selected = self.tree.selection()
-        if not selected:
+        self.cursor.execute("SELECT id FROM eventos WHERE nombre = ? AND fecha = ?", (nombre, fecha))
+        existe = self.cursor.fetchone()
+        if existe and (not self.modo_edicion or existe[0] != self.registro_id):
+            messagebox.showwarning("Duplicado", "Ya existe un evento con ese nombre y fecha.")
             return
-        evento_id = self.tree.item(selected[0])["values"][0]
 
-        nombre = self.nombre_entry.get().strip()
-        fecha = self.fecha_entry.get().strip()
+        if self.modo_edicion and self.registro_id is not None:
+            self.cursor.execute("UPDATE eventos SET nombre = ?, fecha = ? WHERE id = ?",
+                                (nombre, fecha, self.registro_id))
+            self.conn.commit()
+            self.btn_agregar.config(text="Agregar")
+            self.modo_edicion = False
+            self.registro_id = None
+        else:
+            self.cursor.execute("INSERT INTO eventos (nombre, fecha) VALUES (?, ?)", (nombre, fecha))
+            self.conn.commit()
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE eventos SET nombre = ?, fecha = ? WHERE id = ?", (nombre, fecha, evento_id))
-        conn.commit()
-        conn.close()
+        self.nombre_var.set("")
+        self.fecha_var.set("")
+        self._cargar_eventos()
 
-        self._load_eventos()
+    def _cargar_eventos(self):
+        self.lista.delete(0, tk.END)
+        self.cursor.execute("SELECT id, nombre, fecha FROM eventos ORDER BY fecha DESC")
+        self.registros = self.cursor.fetchall()
+        for evento in self.registros:
+            self.lista.insert(tk.END, f"{evento[1]} - {evento[2]}")
 
-    def eliminar_evento(self):
-        selected = self.tree.selection()
-        if not selected:
+    def _editar_evento(self):
+        seleccion = self.lista.curselection()
+        if not seleccion:
             return
-        evento_id = self.tree.item(selected[0])["values"][0]
+        index = seleccion[0]
+        registro = self.registros[index]
+        self.registro_id = registro[0]
+        self.nombre_var.set(registro[1])
+        self.fecha_var.set(registro[2])
+        self.btn_agregar.config(text="Actualizar")
+        self.modo_edicion = True
 
-        if messagebox.askyesno("Confirmar eliminación", "¿Deseas eliminar este evento?"):
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM eventos WHERE id = ?", (evento_id,))
-            conn.commit()
-            conn.close()
-            self._load_eventos()
-
-    def _cargar_datos_seleccionados(self, event):
-        selected = self.tree.selection()
-        if not selected:
+    def _eliminar_evento(self):
+        seleccion = self.lista.curselection()
+        if not seleccion:
             return
-        _, nombre, fecha = self.tree.item(selected[0])["values"]
-        self.nombre_entry.delete(0, tk.END)
-        self.nombre_entry.insert(0, nombre)
-        self.fecha_entry.delete(0, tk.END)
-        self.fecha_entry.insert(0, fecha)
+        index = seleccion[0]
+        evento_id = self.registros[index][0]
+        confirm = messagebox.askyesno("Eliminar", "¿Deseas eliminar este evento?")
+        if confirm:
+            self.cursor.execute("DELETE FROM eventos WHERE id = ?", (evento_id,))
+            self.conn.commit()
+            self._cargar_eventos()

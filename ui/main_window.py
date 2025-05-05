@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
-from ui.gestion_docentes import GestionDocentes
-from ui.gestion_eventos import GestionEventos
-from ui.gestion_responsables import GestionResponsables
+from ui.gestion_docentes import GestorDocentes
+from ui.gestion_eventos import GestorEventos
+from ui.gestion_responsables import GestorResponsables
 from ui.crear_constancia import CrearConstancia
 from ui.historial import HistorialConstancias
 
@@ -45,13 +45,13 @@ class MainWindow(tk.Frame):
 
     # Métodos placeholder que luego conectaremos con cada vista
     def abrir_gestion_docentes(self):
-        GestionDocentes(self.master)
+        GestorDocentes(self.master)
 
     def abrir_gestion_eventos(self):
-        GestionEventos(self.master)
+        GestorEventos(self.master)
 
     def abrir_gestion_responsables(self):
-        GestionResponsables(self.master)
+        GestorResponsables(self.master)
 
     def abrir_crear_constancia(self):
         CrearConstancia(self.master)

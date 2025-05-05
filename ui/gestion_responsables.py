@@ -1,124 +1,120 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
-import os
+import unicodedata
+import re
 
-DB_PATH = os.path.join("data", "constancias.db")
+def strip_accents_and_upper(texto):
+    if not texto:
+        return ""
+    # Eliminar acentos
+    texto = unicodedata.normalize('NFD', texto)
+    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+    # Convertir a mayúsculas
+    texto = texto.upper()
+    # Eliminar espacios y signos de puntuación comunes
+    texto = re.sub(r'[ .,\-]', '', texto)
+    return texto.strip().strip()
 
-class GestionResponsables(tk.Toplevel):
+class GestorResponsables(tk.Toplevel):
     def __init__(self, master=None):
         super().__init__(master)
         self.title("Gestión de Responsables")
-        self.geometry("650x400")
-        self.resizable(False, False)
-
+        self.geometry("400x400")
+        self.conn = sqlite3.connect("data/constancias.db")
+        self.cursor = self.conn.cursor()
         self._build_ui()
-        self._load_responsables()
+        self._cargar_responsables()
+        self.modo_edicion = False
+        self.registro_id = None
 
     def _build_ui(self):
-        columns = ("ID", "Grado", "Nombre", "Rol")
-        self.tree = ttk.Treeview(self, columns=columns, show="headings")
-        for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=150)
-        self.tree.pack(pady=10)
+        frame = ttk.Frame(self)
+        frame.pack(padx=10, pady=10, fill=tk.X)
 
-        form_frame = tk.Frame(self)
-        form_frame.pack(pady=10)
+        ttk.Label(frame, text="Nombre:").pack()
+        self.nombre_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=self.nombre_var).pack(fill=tk.X)
 
-        tk.Label(form_frame, text="Grado:").grid(row=0, column=0)
-        self.grado_entry = tk.Entry(form_frame)
-        self.grado_entry.grid(row=0, column=1, padx=5)
+        ttk.Label(frame, text="Grado:").pack()
+        self.grado_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=self.grado_var).pack(fill=tk.X)
 
-        tk.Label(form_frame, text="Nombre:").grid(row=1, column=0)
-        self.nombre_entry = tk.Entry(form_frame)
-        self.nombre_entry.grid(row=1, column=1, padx=5)
+        ttk.Label(frame, text="Rol:").pack()
+        self.rol_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=self.rol_var).pack(fill=tk.X)
 
-        tk.Label(form_frame, text="Rol:").grid(row=2, column=0)
-        self.rol_entry = tk.Entry(form_frame)
-        self.rol_entry.grid(row=2, column=1, padx=5)
+        self.btn_agregar = ttk.Button(frame, text="Agregar", command=self._guardar_responsable)
+        self.btn_agregar.pack(pady=10)
 
-        btn_frame = tk.Frame(self)
-        btn_frame.pack()
+        self.lista = tk.Listbox(self)
+        self.lista.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        ttk.Button(btn_frame, text="Agregar", command=self.agregar_responsable).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="Editar", command=self.editar_responsable).grid(row=0, column=1, padx=5)
-        ttk.Button(btn_frame, text="Eliminar", command=self.eliminar_responsable).grid(row=0, column=2, padx=5)
-        ttk.Button(btn_frame, text="Actualizar", command=self._load_responsables).grid(row=0, column=3, padx=5)
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=5)
 
-        self.tree.bind("<<TreeviewSelect>>", self._cargar_datos_seleccionados)
+        ttk.Button(btn_frame, text="Editar", command=self._editar_responsable).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Eliminar", command=self._eliminar_responsable).pack(side=tk.LEFT, padx=5)
 
-    def _load_responsables(self):
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, grado, nombre, rol FROM responsables")
-        for responsable in cursor.fetchall():
-            self.tree.insert("", "end", values=responsable)
-        conn.close()
-
-    def agregar_responsable(self):
-        grado = self.grado_entry.get().strip()
-        nombre = self.nombre_entry.get().strip()
-        rol = self.rol_entry.get().strip()
-
-        if not grado or not nombre or not rol:
-            messagebox.showwarning("Campos vacíos", "Por favor complete todos los campos.")
+    def _guardar_responsable(self):
+        nombre = self.nombre_var.get().strip()
+        grado = self.grado_var.get().strip()
+        rol = self.rol_var.get().strip()
+        if not nombre or not grado or not rol:
+            messagebox.showwarning("Campos vacíos", "Debes ingresar nombre, grado y rol.")
             return
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO responsables (grado, nombre, rol) VALUES (?, ?, ?)", (grado, nombre, rol))
-        conn.commit()
-        conn.close()
+        self.cursor.execute("SELECT id, nombre, grado FROM responsables")
+        nuevo_normalizado = strip_accents_and_upper(nombre + grado)
+        for row in self.cursor.fetchall():
+            existente_normalizado = strip_accents_and_upper(row[1] + row[2])
+            if existente_normalizado == nuevo_normalizado:
+                messagebox.showwarning("Duplicado", "Ya existe un responsable con ese nombre y grado.")
+                return
 
-        self._load_responsables()
-        self.grado_entry.delete(0, tk.END)
-        self.nombre_entry.delete(0, tk.END)
-        self.rol_entry.delete(0, tk.END)
+        if self.modo_edicion and self.registro_id is not None:
+            self.cursor.execute("UPDATE responsables SET nombre = ?, grado = ?, rol = ? WHERE id = ?",
+                                (nombre, grado, rol, self.registro_id))
+            self.conn.commit()
+            self.btn_agregar.config(text="Agregar")
+            self.modo_edicion = False
+            self.registro_id = None
+        else:
+            self.cursor.execute("INSERT INTO responsables (nombre, grado, rol) VALUES (?, ?, ?)",(nombre, grado, rol))
+            self.conn.commit()
+        self.nombre_var.set("")
+        self.grado_var.set("")
+        self.rol_var.set("")
+        self._cargar_responsables()
 
-    def editar_responsable(self):
-        selected = self.tree.selection()
-        if not selected:
+    def _cargar_responsables(self):
+        self.lista.delete(0, tk.END)
+        self.cursor.execute("SELECT id, nombre, grado, rol FROM responsables ORDER BY nombre")
+        self.registros = self.cursor.fetchall()
+        for r in self.registros:
+            self.lista.insert(tk.END, f"{r[2]} {r[1]} - {r[3]}")
+
+    def _editar_responsable(self):
+        seleccion = self.lista.curselection()
+        if not seleccion:
             return
-        responsable_id = self.tree.item(selected[0])["values"][0]
+        index = seleccion[0]
+        registro = self.registros[index]
+        self.registro_id = registro[0]
+        self.nombre_var.set(registro[1])
+        self.grado_var.set(registro[2])
+        self.rol_var.set(registro[3])
+        self.btn_agregar.config(text="Actualizar")
+        self.modo_edicion = True
 
-        grado = self.grado_entry.get().strip()
-        nombre = self.nombre_entry.get().strip()
-        rol = self.rol_entry.get().strip()
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE responsables SET grado = ?, nombre = ?, rol = ? WHERE id = ?", (grado, nombre, rol, responsable_id))
-        conn.commit()
-        conn.close()
-
-        self._load_responsables()
-
-    def eliminar_responsable(self):
-        selected = self.tree.selection()
-        if not selected:
+    def _eliminar_responsable(self):
+        seleccion = self.lista.curselection()
+        if not seleccion:
             return
-        responsable_id = self.tree.item(selected[0])["values"][0]
-
-        if messagebox.askyesno("Confirmar eliminación", "¿Deseas eliminar este responsable?"):
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM responsables WHERE id = ?", (responsable_id,))
-            conn.commit()
-            conn.close()
-            self._load_responsables()
-
-    def _cargar_datos_seleccionados(self, event):
-        selected = self.tree.selection()
-        if not selected:
-            return
-        _, grado, nombre, rol = self.tree.item(selected[0])["values"]
-        self.grado_entry.delete(0, tk.END)
-        self.grado_entry.insert(0, grado)
-        self.nombre_entry.delete(0, tk.END)
-        self.nombre_entry.insert(0, nombre)
-        self.rol_entry.delete(0, tk.END)
-        self.rol_entry.insert(0, rol)
+        index = seleccion[0]
+        responsable_id = self.registros[index][0]
+        confirm = messagebox.askyesno("Eliminar", "¿Deseas eliminar este responsable?")
+        if confirm:
+            self.cursor.execute("DELETE FROM responsables WHERE id = ?", (responsable_id,))
+            self.conn.commit()
+            self._cargar_responsables()
