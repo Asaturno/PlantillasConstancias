@@ -12,57 +12,57 @@ from pdf.pdf_generator import abrir_editor
 
 DB_PATH = os.path.join("data", "constancias.db")
 
-HTML_PLANTILLA = """
+# HTML_PLANTILLA = """
 
-    <!-- Logo superior -->
-    <img src="logo_uaemex.png" alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
+#     <!-- Logo superior -->
+#     <img src="logo_uaemex.png" alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
 
-    <!-- Encabezado -->
-    <div style="font-weight: bold;">Universidad Autónoma del Estado de México</div>
+#     <!-- Encabezado -->
+#     <div style="font-weight: bold;">Universidad Autónoma del Estado de México</div>
 
-    <!-- Introducción -->
-    <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
-      El que suscribe, {rol_responsable}, otorga la presente: <br>
-    </div>
+#     <!-- Introducción -->
+#     <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
+#       El que suscribe, {rol_responsable}, otorga la presente: <br>
+#     </div>
 
-    <!-- Título -->
-    <div style="font-weight: bold; font-size: 22px; margin-top: 20px;">Constancia de {tipo}</div>
+#     <!-- Título -->
+#     <div style="font-weight: bold; font-size: 22px; margin-top: 20px;">Constancia de {tipo}</div>
 
-    <!-- Nombre -->
-    <div>a:</div>
-    <div style="font-weight: bold; font-size: 18px; margin: 10px 0;">{docentes}</div>
+#     <!-- Nombre -->
+#     <div>a:</div>
+#     <div style="font-weight: bold; font-size: 18px; margin: 10px 0;">{docentes}</div>
 
-    <!-- Cuerpo -->
-    <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
-      Como <strong>{rol_docente}</strong> en
-      <strong>{nombre_evento}</strong> actividad llevada a cabo el 
-      <strong>{fecha_evento}</strong> del año en curso, durante el periodo<strong>---</strong>.
-      <br><br>
-    </div>
+#     <!-- Cuerpo -->
+#     <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
+#       Como <strong>{rol_docente}</strong> en
+#       <strong>{nombre_evento}</strong> actividad llevada a cabo el 
+#       <strong>{fecha_evento}</strong> del año en curso, durante el periodo<strong>---</strong>.
+#       <br><br>
+#     </div>
 
-    <!-- Lugar y fecha -->
-    <div>Toluca, Edo. de México {fecha_emision}.</div>
+#     <!-- Lugar y fecha -->
+#     <div>Toluca, Edo. de México {fecha_emision}.</div>
 
-    <!-- Firma -->
-    <div style="margin-top: 60px; font-weight: bold;">
-      ATENTAMENTE<br>
-      PATRIA CIENCIA Y TRABAJO<br>
-      <em>“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca</em><br><br><br>
-      {grado_responsable}<br>
-      {nombre_responsable}<br>
-      {rol_responsable}
-    </div>
+#     <!-- Firma -->
+#     <div style="margin-top: 60px; font-weight: bold;">
+#       ATENTAMENTE<br>
+#       PATRIA CIENCIA Y TRABAJO<br>
+#       <em>“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca</em><br><br><br>
+#       {grado_responsable}<br>
+#       {nombre_responsable}<br>
+#       {rol_responsable}
+#     </div>
 
-    <!-- Pie de página -->
-    <div style="font-size: 12px; margin-top: 40px; text-align: left;">
-      C.c.p. Archivo<br>
-      ZGMV/eez<br><br>
-      Calle Heriberto Enríquez No. 904, esquina Ceboruco,<br>
-      Col. Azteca C.P. 50150 Toluca, Estado de México<br>
-      Tels. 722.217.12.17, 722.212.08.08<br>
-      plantelangelmariagaribay@uaemex.mx
-    </div>
-"""
+#     <!-- Pie de página -->
+#     <div style="font-size: 12px; margin-top: 40px; text-align: left;">
+#       C.c.p. Archivo<br>
+#       ZGMV/eez<br><br>
+#       Calle Heriberto Enríquez No. 904, esquina Ceboruco,<br>
+#       Col. Azteca C.P. 50150 Toluca, Estado de México<br>
+#       Tels. 722.217.12.17, 722.212.08.08<br>
+#       plantelangelmariagaribay@uaemex.mx
+#     </div>
+# """
 
 class CrearConstancia(tk.Toplevel):
     def __init__(self, master=None):
@@ -145,6 +145,7 @@ class CrearConstancia(tk.Toplevel):
         rol_docente = self.rol_docente_entry.get().strip()
         fecha_emision = self.fecha_entry.get().strip()
 
+
         if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
             messagebox.showwarning("Campos incompletos", "Completa todos los campos antes de continuar.")
             return
@@ -168,62 +169,19 @@ class CrearConstancia(tk.Toplevel):
         grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
         conn.close()
 
-        plantilla = HTML_PLANTILLA.format(
-            tipo=tipo.upper(),
-            docentes=docentes_texto,
-            rol_docente=rol_docente,
-            nombre_evento=evento_nombre,
-            fecha_evento=fecha_evento,
-            fecha_emision=fecha_emision,
-            grado_responsable=grado_responsable,
-            nombre_responsable=nombre_responsable,
-            rol_responsable=rol_responsable
-        )
+        datos = {
+            'rol_responsable': rol_responsable,
+            'tipo': tipo,
+            'docentes': docentes_texto,
+            'rol_docente': rol_docente,
+            'nombre_evento': evento_nombre,
+            'fecha_evento': fecha_evento,
+            'fecha_emision': fecha_emision,
+            'grado_responsable': grado_responsable,
+            'nombre_responsable': nombre_responsable
+        }
 
-        abrir_editor(plantilla)
-
-    # def _prellenar_texto(self):
-    #     tipo = self.tipo_entry.get().strip()
-    #     rol_docente = self.rol_docente_entry.get().strip()
-    #     fecha_emision = self.fecha_entry.get().strip()
-
-    #     if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
-    #         messagebox.showwarning("Campos incompletos", "Completa todos los campos antes de continuar.")
-    #         return
-
-    #     # Docentes
-    #     indices = self.docentes_cb.curselection()
-    #     if not indices:
-    #         messagebox.showwarning("Sin docentes", "Selecciona al menos un docente.")
-    #         return
-    #     docentes_texto = "\n".join([self.docentes[i][1] for i in indices])
-
-    #     # Evento y responsable
-    #     evento_id, evento_str = self.eventos[self.evento_cb.current()]
-    #     evento_nombre, fecha_evento = evento_str.split(' (')
-    #     fecha_evento = fecha_evento.replace(")", "")
-
-    #     responsable_id, responsable_str = self.responsables[self.responsable_cb.current()]
-    #     conn = sqlite3.connect(DB_PATH)
-    #     cur = conn.cursor()
-    #     cur.execute("SELECT grado, nombre, rol FROM responsables WHERE id = ?", (responsable_id,))
-    #     grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
-    #     conn.close()
-
-    #     texto = TEXTO_BASE.format(
-    #         tipo_constancia=tipo.upper(),
-    #         docentes=docentes_texto,
-    #         rol_docente=rol_docente,
-    #         nombre_evento=evento_nombre,
-    #         fecha_evento=fecha_evento,
-    #         fecha_emision=fecha_emision,
-    #         grado_responsable=grado_responsable,
-    #         nombre_responsable=nombre_responsable,
-    #         rol_responsable=rol_responsable
-    #     )
-
-    #     self.editor.delete("1.0", tk.END)
-    #     self.editor.insert(tk.END, texto)
+        abrir_editor(datos)
 
     # def _guardar_constancia(self):
     #     contenido = self.editor.get("1.0", tk.END).strip()
