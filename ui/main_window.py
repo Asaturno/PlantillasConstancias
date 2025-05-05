@@ -6,6 +6,7 @@ from ui.gestion_eventos import GestorEventos
 from ui.gestion_responsables import GestorResponsables
 from ui.crear_constancia import CrearConstancia
 from ui.historial import HistorialConstancias
+# from pdf.pdf_generator import abrir_editor
 
 
 class MainWindow(tk.Frame):
@@ -35,8 +36,13 @@ class MainWindow(tk.Frame):
         btn_gestion_eventos = ttk.Button(self, text="Gestión de Eventos", width=30, command=self.abrir_gestion_eventos)
         btn_gestion_eventos.pack(pady=10)
 
+        # Botón original, abre el editor con tkinter
         btn_nueva_constancia = ttk.Button(self, text="Crear Nueva Constancia", width=30, command=self.abrir_crear_constancia)
         btn_nueva_constancia.pack(pady=10)
+
+        # ## Nuevo botón, abre el editor de TinyMCE con webview
+        # btn_nueva_constancia = tk.Button(self, text="Crear nueva constancia", width=30, command=abrir_editor)
+        # btn_nueva_constancia.pack(pady=10)
 
         btn_historial = ttk.Button(self, text="Historial de Constancias", width=30, command=self.abrir_historial)
         btn_historial.pack(pady=10)

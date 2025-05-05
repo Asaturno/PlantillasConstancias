@@ -8,6 +8,8 @@ from reportlab.lib.pagesizes import LETTER
 from reportlab.pdfgen import canvas
 from tkinter import filedialog
 
+from pdf.pdf_generator import abrir_editor
+
 DB_PATH = os.path.join("data", "constancias.db")
 
 TEXTO_BASE = """[LOGO DE LA ESCUELA]
@@ -43,10 +45,10 @@ class CrearConstancia(tk.Toplevel):
         # Selección de datos
         form = tk.Frame(self)
         form.pack(pady=10, fill=tk.X)
-
+ 
         tk.Label(form, text="Docentes:").grid(row=0, column=0, sticky="e")
-        self.docentes_listbox = tk.Listbox(form, selectmode=tk.MULTIPLE, height=5, exportselection=False)
-        self.docentes_listbox.grid(row=0, column=1, padx=5)
+        self.docentes_cb = tk.Listbox(form, selectmode=tk.MULTIPLE, height=5, exportselection=False)
+        self.docentes_cb.grid(row=0, column=1, padx=5)
 
         tk.Label(form, text="Evento:").grid(row=1, column=0, sticky="e")
         self.evento_cb = ttk.Combobox(form, state="readonly")
@@ -79,8 +81,9 @@ class CrearConstancia(tk.Toplevel):
         btn_frame.pack(pady=10)
 
         ttk.Button(btn_frame, text="Prellenar texto", command=self._prellenar_texto).grid(row=0, column=0, padx=10)
+        ttk.Button(btn_frame, text="Generar vista previa", command=self._generar_plantilla).grid(row=1, column=0, padx=10) #botón nuevo, abrir TinyMCE
         ttk.Button(btn_frame, text="Guardar en historial", command=self._guardar_constancia).grid(row=0, column=1, padx=10)
-        ttk.Button(btn_frame, text="Exportar a PDF", command=self._exportar_pdf).grid(row=0, column=2, padx=10)
+        ttk.Button(btn_frame, text="Exportar a PDF", command=self._exportar_pdf).grid(row=1, column=1, padx=10)
 
 
     def _load_data(self):
@@ -91,7 +94,7 @@ class CrearConstancia(tk.Toplevel):
         cursor.execute("SELECT id, grado || ' ' || nombre FROM docentes")
         self.docentes = cursor.fetchall()
         for _, nombre in self.docentes:
-            self.docentes_listbox.insert(tk.END, nombre)
+            self.docentes_cb.insert(tk.END, nombre)
 
         # Evento
         cursor.execute("SELECT id, nombre || ' (' || fecha || ')' FROM eventos")
@@ -105,6 +108,55 @@ class CrearConstancia(tk.Toplevel):
 
         conn.close()
 
+    def _generar_plantilla(self):
+        tipo = self.tipo_entry.get().strip()
+        rol_docente = self.rol_docente_entry.get().strip()
+        fecha_emision = self.fecha_entry.get().strip()
+
+        if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
+            messagebox.showwarning("Campos incompletos", "Completa todos los campos antes de continuar.")
+            return
+        
+        # Docentes
+        indices = self.docentes_cb.curselection()
+        if not indices:
+            messagebox.showwarning("Sin docentes", "Selecciona al menos un docente.")
+            return
+        docentes_texto = "\n".join([self.docentes[i][1] for i in indices])
+
+        # Evento y responsable
+        evento_id, evento_str = self.eventos[self.evento_cb.current()]
+        evento_nombre, fecha_evento = evento_str.split(' (')
+        fecha_evento = fecha_evento.replace(")", "")
+
+        responsable_id, responsable_str = self.responsables[self.responsable_cb.current()]
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT grado, nombre, rol FROM responsables WHERE id = ?", (responsable_id,))
+        grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
+        conn.close()
+
+        # docente_nombre = self.docentes_cb.get().split(" - ", 1)[1]
+        # responsable_nombre = self.responsable_cb.get().split(" - ", 1)[1]
+        # evento_nombre, evento_fecha = self.evento_cb.get().split(" - ")[1].rsplit(" ", 1)
+
+        # rol_docente = self.rol_docente_entry.get()
+        # fecha_elab = self.fecha_entry.get()
+
+        plantilla = f"""
+        <h2 style="text-align:center;">CONSTANCIA DE {tipo.upper()}</h2>
+        <p style="text-align:justify;">
+        El que suscribe, <strong>{nombre_responsable}</strong>, otorga la presente constancia de <strong>{tipo}</strong> a:<br><br>
+        <strong>{docentes_texto}</strong><br><br>
+        Como <strong>{rol_docente}</strong> en <strong>{evento_nombre}</strong>, llevado a cabo el <strong>{fecha_evento}</strong>.
+        </p>
+        <p style="text-align:right;">Toluca, Estado de México, {fecha_emision}</p>
+        <br><br>
+        <p style="text-align:center;"><strong>{nombre_responsable}</strong><br><em>Firma del responsable</em></p>
+        """
+
+        abrir_editor(plantilla)
+
     def _prellenar_texto(self):
         tipo = self.tipo_entry.get().strip()
         rol_docente = self.rol_docente_entry.get().strip()
@@ -115,7 +167,7 @@ class CrearConstancia(tk.Toplevel):
             return
 
         # Docentes
-        indices = self.docentes_listbox.curselection()
+        indices = self.docentes_cb.curselection()
         if not indices:
             messagebox.showwarning("Sin docentes", "Selecciona al menos un docente.")
             return
