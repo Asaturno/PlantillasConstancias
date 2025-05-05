@@ -65,7 +65,19 @@ def crear_base_de_datos():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 contenido TEXT NOT NULL,
                 fecha_emision TEXT NOT NULL
-            )
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS constancias (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                html TEXT NOT NULL,
+                fecha_emision TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                docente TEXT NOT NULL,
+                evento TEXT NOT NULL,
+                responsable TEXT NOT NULL
+            );
         """)
 
 

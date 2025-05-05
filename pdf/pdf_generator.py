@@ -33,7 +33,7 @@ def abrir_editor(datos_constancia):
         plantilla = f.read()
 
     # Ruta absoluta al logo
-    logo_path = os.path.abspath("logo_uaemex.png")
+    logo_path = os.path.abspath("../assets/logo.png")
     logo_url = f"file:///{logo_path.replace(os.sep, '/')}"
 
     # Reemplazo de marcadores con datos reales
@@ -44,18 +44,66 @@ def abrir_editor(datos_constancia):
         rol_docente=datos_constancia['rol_docente'],
         nombre_evento=datos_constancia['nombre_evento'],
         fecha_evento=datos_constancia['fecha_evento'],
-        fecha_emision=datetime.now().strftime("%d de %B de %Y"),
+        fecha_emision=datos_constancia['fecha_emision'],
         grado_responsable=datos_constancia['grado_responsable'],
         nombre_responsable=datos_constancia['nombre_responsable'],
-        logo=logo_url  # Si usas {logo} en plantilla
+        logo=logo_url 
     )
+
+    html_editor = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Editor de Constancia</title>
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <style>
+            #editor {{
+                height: 600px;
+                background: white;
+                padding: 20px;
+            }}
+            .botonera {{
+                margin-top: 15px;
+            }}
+        </style>
+    </head>
+    <body>
+        <h2>Editor de Constancia</h2>
+        <div id="editor"></div>
+
+
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <script>
+            var quill;
+
+            function initEditor() {{
+                quill = new Quill('#editor', {{
+                    theme: 'snow'
+                }});
+                const contenidoInicial = `{html_renderizado}`;
+                quill.clipboard.dangerouslyPasteHTML(contenidoInicial);
+            }}
+
+
+            // Esperar a que pywebview esté listo
+            if (window.pywebview) {{
+                window.onload = initEditor;
+            }} else {{
+                document.addEventListener("pywebviewready", initEditor);
+            }}
+        </script>
+    </body>
+    </html>
+    """
+
 
     api = ConstanciaEditorAPI(html_renderizado)
 
 
     webview.create_window(
             "Vista previa de la constancia",
-            html=html_renderizado + """
+            html=html_editor + """
             <br><button onclick="window.pywebview.api.exportar_pdf()">Exportar a PDF</button>
             """,
             js_api=api,
