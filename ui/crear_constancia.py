@@ -12,24 +12,56 @@ from pdf.pdf_generator import abrir_editor
 
 DB_PATH = os.path.join("data", "constancias.db")
 
-TEXTO_BASE = """[LOGO DE LA ESCUELA]
+HTML_PLANTILLA = """
 
-El que suscribe, {rol_responsable}, otorga la presente:
+    <!-- Logo superior -->
+    <img src="logo_uaemex.png" alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
 
-CONSTANCIA DE {tipo_constancia}
-a:
-{docentes}
+    <!-- Encabezado -->
+    <div style="font-weight: bold;">Universidad Autónoma del Estado de México</div>
 
-Como {rol_docente} en {nombre_evento}, llevado a cabo el {fecha_evento}
+    <!-- Introducción -->
+    <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
+      El que suscribe, {rol_responsable}, otorga la presente: <br>
+    </div>
 
-Toluca, Estado de México, {fecha_emision}
-Atentamente
-[ESLOGAN DE LA ESCUELA]
-[PLACA CONMEMORATIVA]
+    <!-- Título -->
+    <div style="font-weight: bold; font-size: 22px; margin-top: 20px;">Constancia de {tipo}</div>
 
-{grado_responsable}
-{nombre_responsable}
-{rol_responsable}
+    <!-- Nombre -->
+    <div>a:</div>
+    <div style="font-weight: bold; font-size: 18px; margin: 10px 0;">{docentes}</div>
+
+    <!-- Cuerpo -->
+    <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
+      Como <strong>{rol_docente}</strong> en
+      <strong>{nombre_evento}</strong> actividad llevada a cabo el 
+      <strong>{fecha_evento}</strong> del año en curso, durante el periodo<strong>---</strong>.
+      <br><br>
+    </div>
+
+    <!-- Lugar y fecha -->
+    <div>Toluca, Edo. de México {fecha_emision}.</div>
+
+    <!-- Firma -->
+    <div style="margin-top: 60px; font-weight: bold;">
+      ATENTAMENTE<br>
+      PATRIA CIENCIA Y TRABAJO<br>
+      <em>“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca</em><br><br><br>
+      {grado_responsable}<br>
+      {nombre_responsable}<br>
+      {rol_responsable}
+    </div>
+
+    <!-- Pie de página -->
+    <div style="font-size: 12px; margin-top: 40px; text-align: left;">
+      C.c.p. Archivo<br>
+      ZGMV/eez<br><br>
+      Calle Heriberto Enríquez No. 904, esquina Ceboruco,<br>
+      Col. Azteca C.P. 50150 Toluca, Estado de México<br>
+      Tels. 722.217.12.17, 722.212.08.08<br>
+      plantelangelmariagaribay@uaemex.mx
+    </div>
 """
 
 class CrearConstancia(tk.Toplevel):
@@ -80,10 +112,10 @@ class CrearConstancia(tk.Toplevel):
         btn_frame = tk.Frame(self)
         btn_frame.pack(pady=10)
 
-        ttk.Button(btn_frame, text="Prellenar texto", command=self._prellenar_texto).grid(row=0, column=0, padx=10)
-        ttk.Button(btn_frame, text="Generar vista previa", command=self._generar_plantilla).grid(row=1, column=0, padx=10) #botón nuevo, abrir TinyMCE
-        ttk.Button(btn_frame, text="Guardar en historial", command=self._guardar_constancia).grid(row=0, column=1, padx=10)
-        ttk.Button(btn_frame, text="Exportar a PDF", command=self._exportar_pdf).grid(row=1, column=1, padx=10)
+        # ttk.Button(btn_frame, text="Prellenar texto", command=self._prellenar_texto).grid(row=0, column=0, padx=10)
+        ttk.Button(btn_frame, text="Generar vista previa", command=self._generar_plantilla).grid(row=2, column=1, padx=10) #botón nuevo, abrir TinyMCE
+        # ttk.Button(btn_frame, text="Guardar en historial", command=self._guardar_constancia).grid(row=0, column=1, padx=10)
+        # ttk.Button(btn_frame, text="Exportar a PDF", command=self._exportar_pdf).grid(row=1, column=1, padx=10)
 
 
     def _load_data(self):
@@ -136,57 +168,8 @@ class CrearConstancia(tk.Toplevel):
         grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
         conn.close()
 
-        # docente_nombre = self.docentes_cb.get().split(" - ", 1)[1]
-        # responsable_nombre = self.responsable_cb.get().split(" - ", 1)[1]
-        # evento_nombre, evento_fecha = self.evento_cb.get().split(" - ")[1].rsplit(" ", 1)
-
-        # rol_docente = self.rol_docente_entry.get()
-        # fecha_elab = self.fecha_entry.get()
-
-        plantilla = f"""
-        <h2 style="text-align:center;">CONSTANCIA DE {tipo.upper()}</h2>
-        <p style="text-align:justify;">
-        El que suscribe, <strong>{nombre_responsable}</strong>, otorga la presente constancia de <strong>{tipo}</strong> a:<br><br>
-        <strong>{docentes_texto}</strong><br><br>
-        Como <strong>{rol_docente}</strong> en <strong>{evento_nombre}</strong>, llevado a cabo el <strong>{fecha_evento}</strong>.
-        </p>
-        <p style="text-align:right;">Toluca, Estado de México, {fecha_emision}</p>
-        <br><br>
-        <p style="text-align:center;"><strong>{nombre_responsable}</strong><br><em>Firma del responsable</em></p>
-        """
-
-        abrir_editor(plantilla)
-
-    def _prellenar_texto(self):
-        tipo = self.tipo_entry.get().strip()
-        rol_docente = self.rol_docente_entry.get().strip()
-        fecha_emision = self.fecha_entry.get().strip()
-
-        if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
-            messagebox.showwarning("Campos incompletos", "Completa todos los campos antes de continuar.")
-            return
-
-        # Docentes
-        indices = self.docentes_cb.curselection()
-        if not indices:
-            messagebox.showwarning("Sin docentes", "Selecciona al menos un docente.")
-            return
-        docentes_texto = "\n".join([self.docentes[i][1] for i in indices])
-
-        # Evento y responsable
-        evento_id, evento_str = self.eventos[self.evento_cb.current()]
-        evento_nombre, fecha_evento = evento_str.split(' (')
-        fecha_evento = fecha_evento.replace(")", "")
-
-        responsable_id, responsable_str = self.responsables[self.responsable_cb.current()]
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("SELECT grado, nombre, rol FROM responsables WHERE id = ?", (responsable_id,))
-        grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
-        conn.close()
-
-        texto = TEXTO_BASE.format(
-            tipo_constancia=tipo.upper(),
+        plantilla = HTML_PLANTILLA.format(
+            tipo=tipo.upper(),
             docentes=docentes_texto,
             rol_docente=rol_docente,
             nombre_evento=evento_nombre,
@@ -197,26 +180,68 @@ class CrearConstancia(tk.Toplevel):
             rol_responsable=rol_responsable
         )
 
-        self.editor.delete("1.0", tk.END)
-        self.editor.insert(tk.END, texto)
+        abrir_editor(plantilla)
 
-    def _guardar_constancia(self):
-        contenido = self.editor.get("1.0", tk.END).strip()
-        if not contenido:
-            messagebox.showwarning("Sin contenido", "No hay contenido que guardar.")
-            return
+    # def _prellenar_texto(self):
+    #     tipo = self.tipo_entry.get().strip()
+    #     rol_docente = self.rol_docente_entry.get().strip()
+    #     fecha_emision = self.fecha_entry.get().strip()
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO historial_constancias (contenido, fecha_emision) VALUES (?, ?)", (
-            contenido,
-            self.fecha_entry.get().strip()
-        ))
-        conn.commit()
-        conn.close()
+    #     if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
+    #         messagebox.showwarning("Campos incompletos", "Completa todos los campos antes de continuar.")
+    #         return
 
-        messagebox.showinfo("Guardado", "Constancia guardada en historial.")
-        self.destroy()
+    #     # Docentes
+    #     indices = self.docentes_cb.curselection()
+    #     if not indices:
+    #         messagebox.showwarning("Sin docentes", "Selecciona al menos un docente.")
+    #         return
+    #     docentes_texto = "\n".join([self.docentes[i][1] for i in indices])
+
+    #     # Evento y responsable
+    #     evento_id, evento_str = self.eventos[self.evento_cb.current()]
+    #     evento_nombre, fecha_evento = evento_str.split(' (')
+    #     fecha_evento = fecha_evento.replace(")", "")
+
+    #     responsable_id, responsable_str = self.responsables[self.responsable_cb.current()]
+    #     conn = sqlite3.connect(DB_PATH)
+    #     cur = conn.cursor()
+    #     cur.execute("SELECT grado, nombre, rol FROM responsables WHERE id = ?", (responsable_id,))
+    #     grado_responsable, nombre_responsable, rol_responsable = cur.fetchone()
+    #     conn.close()
+
+    #     texto = TEXTO_BASE.format(
+    #         tipo_constancia=tipo.upper(),
+    #         docentes=docentes_texto,
+    #         rol_docente=rol_docente,
+    #         nombre_evento=evento_nombre,
+    #         fecha_evento=fecha_evento,
+    #         fecha_emision=fecha_emision,
+    #         grado_responsable=grado_responsable,
+    #         nombre_responsable=nombre_responsable,
+    #         rol_responsable=rol_responsable
+    #     )
+
+    #     self.editor.delete("1.0", tk.END)
+    #     self.editor.insert(tk.END, texto)
+
+    # def _guardar_constancia(self):
+    #     contenido = self.editor.get("1.0", tk.END).strip()
+    #     if not contenido:
+    #         messagebox.showwarning("Sin contenido", "No hay contenido que guardar.")
+    #         return
+
+    #     conn = sqlite3.connect(DB_PATH)
+    #     cursor = conn.cursor()
+    #     cursor.execute("INSERT INTO historial_constancias (contenido, fecha_emision) VALUES (?, ?)", (
+    #         contenido,
+    #         self.fecha_entry.get().strip()
+    #     ))
+    #     conn.commit()
+    #     conn.close()
+
+    #     messagebox.showinfo("Guardado", "Constancia guardada en historial.")
+    #     self.destroy()
 
 
     def _exportar_pdf(self):

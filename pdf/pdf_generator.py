@@ -1,61 +1,69 @@
 import webview
 
-def abrir_editor(html_contenido):
-    # Escapar el contenido para insertar en JavaScript
-    html_contenido = html_contenido.replace("\\", "\\\\").replace("`", "'").replace("\n", "").replace('"', '\\"')
+class API:
+    def exportar_pdf(self, html_content):
+        from weasyprint import HTML
+        from tkinter import filedialog, Tk
 
+        try:
+            root = Tk()
+            root.withdraw()
+            ruta = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Guardar constancia como PDF"
+            )
+            root.destroy()
+
+            if not ruta:
+                return "Exportación cancelada por el usuario"
+
+            HTML(string=html_content).write_pdf(ruta)
+            return "PDF exportado con éxito"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+def abrir_editor(html_generado):
     html_editor = f"""
     <!DOCTYPE html>
     <html>
     <head>
-      <meta charset="utf-8">
-      <title>Editor de Constancia</title>
-      <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-      <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-      <style>
-        body {{
-          margin: 0;
-          padding: 20px;
-          font-family: sans-serif;
-        }}
-        #editor-container {{
-          height: 500px;
-          background: #fff;
-        }}
-      </style>
+        <meta charset="UTF-8">
+        <title>Editor de Constancia</title>
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <style>
+            #editor {{
+                height: 500px;
+                background: white;
+                padding: 20px;
+            }}
+            .botonera {{
+                margin-top: 15px;
+            }}
+        </style>
     </head>
     <body>
-      <div id="editor-container"></div>
+        <h2>Editor de Constancia</h2>
+        <div id="editor">{html_generado}</div>
+        <div class="botonera">
+            <button onclick="exportarPDF()">Exportar a PDF</button>
+        </div>
 
-      <script>
-        var quill = new Quill('#editor-container', {{
-          theme: 'snow',
-          modules: {{
-            toolbar: [
-              ['bold', 'italic', 'underline'],
-              ['link', 'image'],
-              [{{
-                'list': 'ordered'
-              }}, {{
-                'list': 'bullet'
-              }}],
-              ['clean']
-            ]
-          }}
-        }});
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <script>
+            var quill = new Quill('#editor', {{
+                theme: 'snow'
+            }});
 
-        // Insertar contenido HTML inicial
-        const html = "{html_contenido}";
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        quill.setContents(quill.clipboard.convert(temp.innerHTML), 'silent');
-
-        
-      </script>
+            async function exportarPDF() {{
+                const htmlContent = document.querySelector('.ql-editor').innerHTML;
+                const resultado = await window.pywebview.api.exportar_pdf(htmlContent);
+                alert(resultado);
+            }}
+        </script>
     </body>
     </html>
     """
-#// Futuro: podríamos obtener el contenido con quill.root.innerHTML o quill.getContents()
-    webview.create_window("Editor de Constancia", html=html_editor, width=900, height=700)
-    webview.start()
 
+    ventana = webview.create_window("Vista previa de constancia", html=html_editor, js_api=API(), width=800, height=700)
+    webview.start()
