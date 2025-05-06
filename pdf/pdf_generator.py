@@ -2,8 +2,7 @@ import os
 import webview
 from weasyprint import HTML
 from tkinter import filedialog, messagebox
-import threading
-from datetime import datetime
+
 
 class ConstanciaEditorAPI:
     def __init__(self, html_renderizado):
@@ -24,7 +23,7 @@ class ConstanciaEditorAPI:
         else:
             messagebox.showinfo("Cancelado", "Exportación cancelada por el usuario.")
 
-def abrir_editor(datos_constancia):
+def vista_previa(text_widgets):
     # Cargar plantilla HTML
     ruta_base = os.path.dirname(os.path.abspath(__file__))
     ruta_plantilla = os.path.join(ruta_base, "plantilla_constancia.html")
@@ -33,77 +32,28 @@ def abrir_editor(datos_constancia):
         plantilla = f.read()
 
     # Ruta absoluta al logo
-    logo_path = os.path.abspath("../assets/logo.png")
+    logo_path = os.path.abspath("logo.png")
     logo_url = f"file:///{logo_path.replace(os.sep, '/')}"
 
     # Reemplazo de marcadores con datos reales
     html_renderizado = plantilla.format(
-        rol_responsable=datos_constancia['rol_responsable'],
-        tipo=datos_constancia['tipo'],
-        docentes=datos_constancia['docentes'],
-        rol_docente=datos_constancia['rol_docente'],
-        nombre_evento=datos_constancia['nombre_evento'],
-        fecha_evento=datos_constancia['fecha_evento'],
-        fecha_emision=datos_constancia['fecha_emision'],
-        grado_responsable=datos_constancia['grado_responsable'],
-        nombre_responsable=datos_constancia['nombre_responsable'],
-        logo=logo_url 
+        logo=logo_url,
+        encabezado=text_widgets['Encabezado'],
+        intro=text_widgets['Introducción'],
+        titulo=text_widgets['Título'],
+        docentes=text_widgets['Docentes'],
+        cuerpo=text_widgets['Cuerpo'],
+        cierre=text_widgets['Cierre'],
+        firma=text_widgets['Firma'],
+        pie=text_widgets['Pie']
     )
-
-    html_editor = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Editor de Constancia</title>
-        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-        <style>
-            #editor {{
-                height: 600px;
-                background: white;
-                padding: 20px;
-            }}
-            .botonera {{
-                margin-top: 15px;
-            }}
-        </style>
-    </head>
-    <body>
-        <h2>Editor de Constancia</h2>
-        <div id="editor"></div>
-
-
-        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-        <script>
-            var quill;
-
-            function initEditor() {{
-                quill = new Quill('#editor', {{
-                    theme: 'snow'
-                }});
-                const contenidoInicial = `{html_renderizado}`;
-                quill.clipboard.dangerouslyPasteHTML(contenidoInicial);
-            }}
-
-
-            // Esperar a que pywebview esté listo
-            if (window.pywebview) {{
-                window.onload = initEditor;
-            }} else {{
-                document.addEventListener("pywebviewready", initEditor);
-            }}
-        </script>
-    </body>
-    </html>
-    """
-
 
     api = ConstanciaEditorAPI(html_renderizado)
 
 
     webview.create_window(
             "Vista previa de la constancia",
-            html=html_editor + """
+            html=html_renderizado + """
             <br><button onclick="window.pywebview.api.exportar_pdf()">Exportar a PDF</button>
             """,
             js_api=api,

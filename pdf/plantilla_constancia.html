@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
-  <body style="font-family: Arial, sans-serif; text-align: center; margin: 60px;">
-<!-- Logo superior -->
-<img src= '{logo}' alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
+<head>
+  <meta charset="UTF-8">
+  <title>Constancia</title>
+</head>
+<body style="font-family: 'Georgia', serif; margin: 60px; background-color: #fff; color: #000;">
 
-<!-- Encabezado -->
-<div style="font-weight: bold;">Universidad Autónoma del Estado de México</div>
+  <!-- Logo superior si lo quieres agregar -->
+  <img src="{logo}" alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
 
-<!-- Introducción -->
-<div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
-  El que suscribe, {rol_responsable}, otorga la presente: <br>
-</div>
+  <div style="text-align: center; font-weight: bold; font-size: 20px; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
+    {encabezado}
+  </div>
 
-<!-- Título -->
-<div style="font-weight: bold; font-size: 22px; margin-top: 20px;">Constancia de {tipo}</div>
+  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6; padding: 10px;">
+    {intro}
+  </div>
 
-<!-- Nombre -->
-<div>a:</div>
-<div style="font-weight: bold; font-size: 18px; margin: 10px 0;">{docentes}</div>
+  <div style="text-align: center; font-weight: bold; font-size: 24px; margin: 40px 0 20px;">
+    {titulo}
+  </div>
 
-<!-- Cuerpo -->
-<div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;">
-  Como <strong>{rol_docente}</strong> en
-  <strong>{nombre_evento}</strong> actividad llevada a cabo el 
-  <strong>{fecha_evento}</strong> del año en curso, durante el periodo<strong>---</strong>.
-  <br><br>
-</div>
+  <div style="text-align: center; font-size: 18px; margin-bottom: 20px;">a:<br></div>
 
-<!-- Lugar y fecha -->
-<div>Toluca, Edo. de México {fecha_emision}.</div>
+  <div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+    {docentes}
+  </div>
 
-<!-- Firma -->
-<div style="margin-top: 60px; font-weight: bold;">
-  ATENTAMENTE<br>
-  PATRIA CIENCIA Y TRABAJO<br>
-  <em>“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca</em><br><br><br>
-  {grado_responsable}<br>
-  {nombre_responsable}<br>
-  {rol_responsable}
-</div>
+  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6; padding: 10px;">
+    {cuerpo}
+  </div>
 
-<!-- Pie de página -->
-<div style="font-size: 12px; margin-top: 40px; text-align: left;">
-  C.c.p. Archivo<br>
-  ZGMV/eez<br><br>
-  Calle Heriberto Enríquez No. 904, esquina Ceboruco,<br>
-  Col. Azteca C.P. 50150 Toluca, Estado de México<br>
-  Tels. 722.217.12.17, 722.212.08.08<br>
-  plantelangelmariagaribay@uaemex.mx
-</div>
+  <div style="text-align: right; margin-top: 40px;">
+    {cierre}
+  </div>
 
-  </body>
+  <div style="text-align: center; margin-top: 60px; font-weight: bold;">
+    {firma}
+  </div>
+
+  <div style="font-size: 12px; margin-top: 40px; text-align: left; color: #555; border-top: 1px solid #ccc; padding-top: 10px;">
+    {pie}
+  </div>
+
+</body>
 </html>
