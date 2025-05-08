@@ -1,55 +1,97 @@
 import tkinter as tk
 from tkinter import ttk
-
 from ui.gestion_docentes import GestorDocentes
 from ui.gestion_eventos import GestorEventos
 from ui.gestion_responsables import GestorResponsables
-from ui.crear_constancia import CrearConstancia
 from ui.historial import HistorialConstancias
-# from pdf.pdf_generator import abrir_editor
+from ui.crear_constancia import CrearConstancia
 
 
 class MainWindow(tk.Frame):
-    def __init__(self,master=None):
+    def __init__(self, master=None):
         super().__init__(master)
-
         self.master = master
-        self.pack(expand=True)
-        self._build_ui()
-        
-        # self.title("Sistema de Gestión de Constancias")
-        # self.geometry("500x400")
-        # self.resizable(False, False)
+        self.pack(fill=tk.BOTH, expand=True)
 
+        # Configurar estilo
+        self.style = ttk.Style()
+        self._configurar_estilos()
         self._build_ui()
+
+    def _configurar_estilos(self):
+        """Configura los estilos visuales"""
+        self.style.theme_use('clam')
+        self.style.configure('.', background='#ecf0f1')
+        self.style.configure('TFrame', background='#ecf0f1')
+        self.style.configure('TLabel', background='#ecf0f1',
+                             foreground='#2c3e50', font=('Arial', 10))
+        self.style.configure('TButton', font=('Arial', 10, 'bold'), padding=8)
+
+        # Estilos para botones
+        self.style.map('Primary.TButton',
+                       background=[('active', '#2980b9'),
+                                   ('!active', '#3498db')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
+
+        self.style.map('Success.TButton',
+                       background=[('active', '#27ae60'),
+                                   ('!active', '#2ecc71')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
+
+        self.style.map('Danger.TButton',
+                       background=[('active', '#c0392b'),
+                                   ('!active', '#e74c3c')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
+
+        self.style.map('Dark.TButton',
+                       background=[('active', '#1a252f'),
+                                   ('!active', '#2c3e50')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
 
     def _build_ui(self):
-        title = tk.Label(self, text="Sistema de Constancias", font=("Helvetica", 20, "bold"))
-        title.pack(pady=20)
+        # Frame principal
+        main_frame = ttk.Frame(self, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
-        btn_gestion_docentes = ttk.Button(self, text="Gestión de Docentes", width=30, command=self.abrir_gestion_docentes)
-        btn_gestion_docentes.pack(pady=10)
+        # Título
+        title = ttk.Label(main_frame,
+                          text="Sistema de Gestión de Constancias",
+                          font=("Arial", 16, "bold"),
+                          foreground="#2c3e50")
+        title.pack(pady=(0, 20))
 
-        btn_gestion_responsables = ttk.Button(self, text="Gestión de Responsables", width=30, command=self.abrir_gestion_responsables)
-        btn_gestion_responsables.pack(pady=10)
+        # Botones
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(expand=True)
 
-        btn_gestion_eventos = ttk.Button(self, text="Gestión de Eventos", width=30, command=self.abrir_gestion_eventos)
-        btn_gestion_eventos.pack(pady=10)
+        buttons = [
+            ("Gestión de Docentes", self.abrir_gestion_docentes, 'Primary.TButton'),
+            ("Gestión de Responsables",
+             self.abrir_gestion_responsables, 'Success.TButton'),
+            ("Gestión de Eventos", self.abrir_gestion_eventos, 'Dark.TButton'),
+            ("Crear Constancia", self.abrir_crear_constancia, 'Success.TButton'),
+            ("Gestión de Constancias", self.abrir_historial, 'Success.TButton')
+        ]
 
-        # Botón original, abre el editor con tkinter
-        btn_nueva_constancia = ttk.Button(self, text="Crear Nueva Constancia", width=30, command=self.abrir_crear_constancia)
-        btn_nueva_constancia.pack(pady=10)
+        for text, command, style in buttons:
+            btn = ttk.Button(
+                btn_frame,
+                text=text,
+                command=command,
+                style=style,
+                width=25,
+                padding=10
+            )
+            btn.pack(pady=8, ipady=5, fill=tk.X)
 
-        # ## Nuevo botón, abre el editor de TinyMCE con webview
-        # btn_nueva_constancia = tk.Button(self, text="Crear nueva constancia", width=30, command=abrir_editor)
-        # btn_nueva_constancia.pack(pady=10)
+        # Botón salir
+        ttk.Button(
+            btn_frame,
+            text="Salir",
+            command=self.master.quit,
+            style='Danger.TButton'
+        ).pack(pady=(20, 0), ipady=5, fill=tk.X)
 
-        btn_historial = ttk.Button(self, text="Historial de Constancias", width=30, command=self.abrir_historial)
-        btn_historial.pack(pady=10)
-
-        ttk.Button(self, text="Salir", command=self.master.quit).pack(fill=tk.X, padx=30, pady=20)
-
-    # Métodos placeholder que luego conectaremos con cada vista
     def abrir_gestion_docentes(self):
         GestorDocentes(self.master)
 
@@ -59,12 +101,8 @@ class MainWindow(tk.Frame):
     def abrir_gestion_responsables(self):
         GestorResponsables(self.master)
 
-    def abrir_crear_constancia(self):
-        CrearConstancia(self.master)
-
     def abrir_historial(self):
         HistorialConstancias(self.master)
 
-# if __name__ == "__main__":
-#     app = MainWindow()
-#     app.mainloop()
+    def abrir_crear_constancia(self):
+        CrearConstancia(self.master)
