@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import hashlib
 
 DB_PATH = os.path.join("data", "constancias.db")
 
@@ -8,7 +9,7 @@ def crear_base_de_datos():
         cursor = conn.cursor()
 
         # Tabla de docentes
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS docentes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 grado TEXT NOT NULL,
@@ -16,8 +17,18 @@ def crear_base_de_datos():
             );
         ''')
 
+        # Tabla de usuarios
+        cursor.execute(''' 
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL UNIQUE,
+                contrasena TEXT NOT NULL,
+                es_superusuario INTEGER DEFAULT 0
+            );
+        ''')
+
         # Tabla de responsables
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS responsables (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 grado TEXT NOT NULL,
@@ -27,7 +38,7 @@ def crear_base_de_datos():
         ''')
 
         # Tabla de eventos
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS eventos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
@@ -36,7 +47,7 @@ def crear_base_de_datos():
         ''')
 
         # Tabla de constancias generadas
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS constancias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tipo TEXT NOT NULL,
@@ -51,7 +62,7 @@ def crear_base_de_datos():
         ''')
 
         # Tabla intermedia para docentes en constancias
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS constancia_docente (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_constancia INTEGER,
@@ -62,31 +73,26 @@ def crear_base_de_datos():
             );
         ''')
 
-        cursor.execute("""
+        # Tabla de historial de constancias
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS historial_constancias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 contenido TEXT NOT NULL,
                 fecha_emision TEXT NOT NULL
             );
-        """)
+        ''')
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS constancias (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                html TEXT NOT NULL,
-                fecha_emision TEXT NOT NULL,
-                tipo TEXT NOT NULL,
-                docente TEXT NOT NULL,
-                evento TEXT NOT NULL,
-                responsable TEXT NOT NULL
-            );
-        """)
-
+        # Crear superusuario inicial si no existe
+        cursor.execute("SELECT COUNT(*) FROM usuarios WHERE es_superusuario = 1")
+        if cursor.fetchone()[0] == 0:
+            contrasena_hash = hashlib.sha256("admin123".encode()).hexdigest()
+            cursor.execute(
+                "INSERT INTO usuarios (nombre, contrasena, es_superusuario) VALUES (?, ?, 1)",
+                ("admin", contrasena_hash)
+            )
 
         conn.commit()
         print("Base de datos creada correctamente.")
-
-        
 
 if __name__ == "__main__":
     crear_base_de_datos()
