@@ -54,6 +54,7 @@ def crear_base_de_datos():
                 fecha_elaboracion TEXT NOT NULL,
                 id_evento INTEGER,
                 id_responsable INTEGER,
+                docentes TEXT,
                 rol_docente TEXT,
                 html TEXT,
                 FOREIGN KEY (id_evento) REFERENCES eventos(id),

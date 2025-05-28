@@ -2,12 +2,15 @@ import os
 import webview
 from weasyprint import HTML
 from tkinter import filedialog, messagebox
+import sqlite3
 
+DB_PATH = os.path.join("data", "constancias.db")
 
 class ConstanciaEditorAPI:
-    def __init__(self, html_renderizado):
+    def __init__(self, html_renderizado, datos_constancia):
         self.html_renderizado = html_renderizado
-
+        self.datos_constancia = datos_constancia
+        
     def exportar_pdf(self):
         # Pedir ruta de guardado
         ruta_pdf = filedialog.asksaveasfilename(defaultextension=".pdf",
@@ -23,7 +26,33 @@ class ConstanciaEditorAPI:
         else:
             messagebox.showinfo("Cancelado", "Exportación cancelada por el usuario.")
 
-def vista_previa(text_widgets):
+    def guardar_constancia(self):
+        datos_constancia = self.datos_constancia
+        # Conexión a BD
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Obtener datos
+        tipo = datos_constancia['tipo']
+        fecha_elab = datos_constancia['fecha_emision']
+        id_evento = datos_constancia['id_evento']
+        id_responsable = datos_constancia['id_responsable']
+        docentes = datos_constancia['docentes']
+        rol_docente = datos_constancia['rol_docente']
+
+        # Insertar datos
+        cursor.execute('''
+            INSERT INTO constancias (tipo, fecha_elaboracion, id_evento, id_responsable, docentes, rol_docente, html)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (tipo, fecha_elab, id_evento, id_responsable, docentes, rol_docente, self.html_renderizado))
+        messagebox.showinfo("Guardado", "Constancia guardada en historial.")
+
+        conn.commit()
+        conn.close()
+
+
+
+def vista_previa(text_widgets, datos_constancia):
     # Cargar plantilla HTML
     ruta_base = os.path.dirname(os.path.abspath(__file__))
     ruta_plantilla = os.path.join(ruta_base, "plantilla_constancia.html")
@@ -48,13 +77,29 @@ def vista_previa(text_widgets):
         pie=text_widgets['Pie']
     )
 
-    api = ConstanciaEditorAPI(html_renderizado)
+    crear_visa_previa(html_renderizado, datos_constancia)
+    # api = ConstanciaEditorAPI(html_renderizado)
 
+    # webview.create_window(
+    #         "Vista previa de la constancia",
+    #         html=html_renderizado + """
+    #         <br><button onclick="window.pywebview.api.exportar_pdf()">Exportar a PDF</button>
+    #         <br><button onclick="window.pywebview.api.guardar_constancia(datos_constancia)">Guardar Constancia</button>
+    #         """,
+    #         js_api=api,
+    #         width=850,
+    #         height=1000
+    #     )
+    # webview.start()
+
+def crear_visa_previa(html_renderizado, datos_constancia):
+    api = ConstanciaEditorAPI(html_renderizado, datos_constancia)
 
     webview.create_window(
             "Vista previa de la constancia",
             html=html_renderizado + """
             <br><button onclick="window.pywebview.api.exportar_pdf()">Exportar a PDF</button>
+            <br><button onclick="window.pywebview.api.guardar_constancia()">Guardar Constancia</button>
             """,
             js_api=api,
             width=850,

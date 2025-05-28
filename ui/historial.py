@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 from tkinter.scrolledtext import ScrolledText
 import sqlite3
 import os
-from ui.vista_previa import VistaPreviaPDF
+# from ui.vista_previa import VistaPreviaPDF
 from ui.crear_constancia import CrearConstancia
 
 
@@ -138,10 +138,10 @@ class HistorialConstancias(tk.Toplevel):
 
         ttk.Button(btn_frame, text="Crear nueva constancia",
                    command=self._abrir_crear_constancia).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Copiar texto", command=self._copiar_texto,
-                   style='Primary.TButton').pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Exportar a PDF", command=self._vista_previa_pdf,
-                   style='Success.TButton').pack(side=tk.LEFT, padx=5)
+        # ttk.Button(btn_frame, text="Copiar texto", command=self._copiar_texto,
+        #            style='Primary.TButton').pack(side=tk.LEFT, padx=5)
+        # ttk.Button(btn_frame, text="Exportar a PDF", command=self._vista_previa_pdf,
+        #            style='Success.TButton').pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Eliminar constancia", command=self._eliminar_constancia,
                    style='Danger.TButton').pack(side=tk.RIGHT, padx=5)
 
@@ -172,26 +172,26 @@ class HistorialConstancias(tk.Toplevel):
         self.text_area.insert(tk.END, contenido)
         self.text_area.config(state=tk.DISABLED)
 
-    def _vista_previa_pdf(self):
-        if not self.constancia_list.selection():
-            return
+    # def _vista_previa_pdf(self):
+    #     if not self.constancia_list.selection():
+    #         return
 
-        selected_item = self.constancia_list.selection()[0]
-        constancia_id = self.constancia_list.item(selected_item)['values'][0]
+    #     selected_item = self.constancia_list.selection()[0]
+    #     constancia_id = self.constancia_list.item(selected_item)['values'][0]
 
-        self.cursor.execute(
-            "SELECT contenido FROM historial_constancias WHERE id = ?", (constancia_id,))
-        contenido = self.cursor.fetchone()[0]
+    #     self.cursor.execute(
+    #         "SELECT contenido FROM historial_constancias WHERE id = ?", (constancia_id,))
+    #     contenido = self.cursor.fetchone()[0]
 
-        VistaPreviaPDF(self, contenido)
+    #     VistaPreviaPDF(self, contenido)
 
-    def _copiar_texto(self):
-        texto = self.text_area.get("1.0", tk.END).strip()
-        if texto:
-            self.clipboard_clear()
-            self.clipboard_append(texto)
-            messagebox.showinfo(
-                "Copiado", "El texto se ha copiado al portapapeles.")
+    # def _copiar_texto(self):
+    #     texto = self.text_area.get("1.0", tk.END).strip()
+    #     if texto:
+    #         self.clipboard_clear()
+    #         self.clipboard_append(texto)
+    #         messagebox.showinfo(
+    #             "Copiado", "El texto se ha copiado al portapapeles.")
 
     def _eliminar_constancia(self):
         if not self.constancia_list.selection():

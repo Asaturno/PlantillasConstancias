@@ -35,24 +35,6 @@ def convertir_texto_a_html(widget):
 
     return texto.replace("\n", "<br>")
 
-
-# Función para lanzar WebView con vista previa
-def vista_previa_html(html_body):
-    plantilla = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Vista Previa</title>
-    </head>
-    <body style="font-family: Arial; padding: 40px; line-height: 1.6;">
-        {html_body}
-    </body>
-    </html>
-    """
-    webview.create_window("Vista previa de constancia", html=plantilla, width=800, height=1000)
-    webview.start()
-
 # Ventana principal del editor de secciones
 def abrir_editor_secciones(datos_constancia):
     root = tk.Toplevel()
@@ -119,13 +101,14 @@ def abrir_editor_secciones(datos_constancia):
 
         text_widgets[titulo] = text_area
 
+
     # ---------- BOTÓN DE VISTA PREVIA ----------
-    vista_btn = ttk.Button(frame_interno, text="Vista previa", command=lambda: generar_vista_previa(text_widgets))
+    vista_btn = ttk.Button(frame_interno, text="Vista previa", command=lambda: generar_vista_previa(text_widgets, datos_constancia))
     vista_btn.pack(pady=20)
 
-def generar_vista_previa(text_widgets):
+def generar_vista_previa(text_widgets, datos_constancia):
     secciones_html={}
     for nombre, widget in text_widgets.items():
         html = convertir_texto_a_html(widget)
         secciones_html[nombre] = html
-    vista_previa(secciones_html)
+    vista_previa(secciones_html, datos_constancia)

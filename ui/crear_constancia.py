@@ -12,25 +12,25 @@ import unicodedata
 
 DB_PATH = os.path.join("data", "constancias.db")
 
-TEXTO_BASE = """[LOGO DE LA ESCUELA]
+# TEXTO_BASE = """[LOGO DE LA ESCUELA]
  
-El que suscribe, {rol_responsable}, otorga la presente:
+# El que suscribe, {rol_responsable}, otorga la presente:
  
-CONSTANCIA DE {tipo_constancia}
-a:
-{docentes}
+# CONSTANCIA DE {tipo_constancia}
+# a:
+# {docentes}
  
-Como {rol_docente} en {nombre_evento}, llevado a cabo el {fecha_evento}
+# Como {rol_docente} en {nombre_evento}, llevado a cabo el {fecha_evento}
  
-Toluca, Estado de México, {fecha_emision}
-Atentamente
-[ESLOGAN DE LA ESCUELA]
-[PLACA CONMEMORATIVA]
+# Toluca, Estado de México, {fecha_emision}
+# Atentamente
+# [ESLOGAN DE LA ESCUELA]
+# [PLACA CONMEMORATIVA]
  
-{grado_responsable}
-{nombre_responsable}
-{rol_responsable}
-"""
+# {grado_responsable}
+# {nombre_responsable}
+# {rol_responsable}
+# """
 
 def normalize_text(text):
     """Elimina acentos y convierte a mayúsculas para búsqueda sin sensibilidad a acentos"""
@@ -41,6 +41,7 @@ def normalize_text(text):
     return text.upper()
 
 class CrearConstancia(tk.Toplevel):
+    datos_constancia = {}
     def __init__(self, master=None, historial=None):
         super().__init__(master)
         self.historial = historial
@@ -304,6 +305,8 @@ class CrearConstancia(tk.Toplevel):
         conn.close()
 
         datos = {
+            'id_responsable': responsable_id,
+            'id_evento': evento_id,
             'rol_responsable': rol_responsable,
             'tipo': tipo,
             'docentes': docentes_texto,
@@ -314,8 +317,12 @@ class CrearConstancia(tk.Toplevel):
             'grado_responsable': grado_responsable,
             'nombre_responsable': nombre_responsable
         }
+        self.datos_constancia = datos
 
         abrir_editor_secciones(datos)
+
+    def get_datosConstancia(self):
+        return self.datos_constancia
 
     # def _prellenar_texto(self):
     #     tipo = self.tipo_entry.get().strip()
