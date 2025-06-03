@@ -5,6 +5,10 @@ import sqlite3
 import os
 # from ui.vista_previa import VistaPreviaPDF
 from ui.crear_constancia import CrearConstancia
+import tempfile
+import webbrowser
+from weasyprint import HTML
+from tkinter import filedialog, messagebox
 
 
 DB_PATH = os.path.join("data", "constancias.db")
@@ -76,13 +80,6 @@ class HistorialConstancias(tk.Toplevel):
         self.evento_entry = ttk.Entry(filter_frame)
         self.evento_entry.grid(row=1, column=1, padx=5, pady=2)
 
-        ttk.Label(filter_frame, text="Número de docentes:").grid(
-            row=2, column=0, sticky='e')
-        self.num_docentes_cb = ttk.Combobox(filter_frame, state="readonly")
-        self.num_docentes_cb["values"] = [
-            "Cualquier cantidad"] + [str(i) for i in range(1, 6)]
-        self.num_docentes_cb.current(0)
-        self.num_docentes_cb.grid(row=2, column=1, padx=5, pady=2)
 
         ttk.Button(filter_frame, text="Buscar", command=self._aplicar_filtros).grid(
             row=3, column=0, columnspan=2, pady=5)
@@ -125,12 +122,14 @@ class HistorialConstancias(tk.Toplevel):
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH,
                          expand=True, padx=5, pady=5)
 
-        ttk.Label(right_frame, text="Detalle de la constancia",
+        ttk.Label(right_frame, text="Vista previa",
                   font=('Arial', 11, 'bold')).pack(pady=5)
 
-        self.text_area = ScrolledText(
-            right_frame, wrap=tk.WORD, font=('Arial', 11))
-        self.text_area.pack(fill=tk.BOTH, expand=True)
+        self.preview_btn = ttk.Button(right_frame, text="Abrir vista previa en navegador", command=self._vista_previa_html)
+        self.preview_btn.pack(pady=10)
+        # self.text_area = ScrolledText(
+        #     right_frame, wrap=tk.WORD, font=('Arial', 11))
+        # self.text_area.pack(fill=tk.BOTH, expand=True)
 
         # Botones de acción
         btn_frame = ttk.Frame(right_frame)
@@ -140,19 +139,18 @@ class HistorialConstancias(tk.Toplevel):
                    command=self._abrir_crear_constancia).pack(side=tk.LEFT, padx=5)
         # ttk.Button(btn_frame, text="Copiar texto", command=self._copiar_texto,
         #            style='Primary.TButton').pack(side=tk.LEFT, padx=5)
-        # ttk.Button(btn_frame, text="Exportar a PDF", command=self._vista_previa_pdf,
-        #            style='Success.TButton').pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Exportar a PDF", command=self._exportar_pdf,
+                   style='Success.TButton').pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Eliminar constancia", command=self._eliminar_constancia,
                    style='Danger.TButton').pack(side=tk.RIGHT, padx=5)
 
     def _load_historial(self):
-        self.cursor.execute(
-            "SELECT id, fecha_emision FROM historial_constancias ORDER BY id DESC")
+        self.cursor.execute("SELECT id, fecha_elaboracion FROM constancias ORDER BY id DESC")
         self.registros = self.cursor.fetchall()
 
         for item in self.constancia_list.get_children():
             self.constancia_list.delete(item)
-
+              
         for reg in self.registros:
             self.constancia_list.insert('', 'end', values=(reg[0], reg[1]))
 
@@ -163,35 +161,58 @@ class HistorialConstancias(tk.Toplevel):
         selected_item = self.constancia_list.selection()[0]
         constancia_id = self.constancia_list.item(selected_item)['values'][0]
 
-        self.cursor.execute(
-            "SELECT contenido FROM historial_constancias WHERE id = ?", (constancia_id,))
-        contenido = self.cursor.fetchone()[0]
+        # self.cursor.execute(
+        #     "SELECT contenido FROM historial_constancias WHERE id = ?", (constancia_id,))
+        # contenido = self.cursor.fetchone()[0]
 
-        self.text_area.config(state=tk.NORMAL)
-        self.text_area.delete("1.0", tk.END)
-        self.text_area.insert(tk.END, contenido)
-        self.text_area.config(state=tk.DISABLED)
+        # self.text_area.config(state=tk.NORMAL)
+        # self.text_area.delete("1.0", tk.END)
+        # self.text_area.insert(tk.END, contenido)
+        # self.text_area.config(state=tk.DISABLED)
 
-    # def _vista_previa_pdf(self):
-    #     if not self.constancia_list.selection():
-    #         return
+    def _vista_previa_html(self):
+        if not self.constancia_list.selection():
+            messagebox.showwarning("Advertencia", "Selecciona una constancia para ver la vista previa.")
+            return
+        
+        selected_item = self.constancia_list.selection()[0]
+        constancia_id = self.constancia_list.item(selected_item)['values'][0]
+        
+        self.cursor.execute("SELECT html FROM constancias WHERE id = ?", (constancia_id,))
+        resultado = self.cursor.fetchone()
+        if resultado:
+            html_content = resultado[0]
+            with tempfile.NamedTemporaryFile('w', delete=False, suffix=".html", encoding="utf-8") as f:
+                f.write(html_content)
+                webbrowser.open('file://' + os.path.abspath(f.name))
 
-    #     selected_item = self.constancia_list.selection()[0]
-    #     constancia_id = self.constancia_list.item(selected_item)['values'][0]
 
-    #     self.cursor.execute(
-    #         "SELECT contenido FROM historial_constancias WHERE id = ?", (constancia_id,))
-    #     contenido = self.cursor.fetchone()[0]
+    def _exportar_pdf(self):
+        if not self.constancia_list.selection():
+            messagebox.showwarning("Advertencia", "Selecciona una constancia para ver la vista previa.")
+            return
+        
+        selected_item = self.constancia_list.selection()[0]
+        constancia_id = self.constancia_list.item(selected_item)['values'][0]
+        
+        self.cursor.execute("SELECT html FROM constancias WHERE id = ?", (constancia_id,))
+        resultado = self.cursor.fetchone()
+        if resultado:
+            html_content = resultado[0]
 
-    #     VistaPreviaPDF(self, contenido)
+            # Pedir ruta de guardado
+            ruta_pdf = filedialog.asksaveasfilename(defaultextension=".pdf",
+                                                    filetypes=[("Archivos PDF", "*.pdf")],
+                                                    title="Guardar constancia como PDF")
 
-    # def _copiar_texto(self):
-    #     texto = self.text_area.get("1.0", tk.END).strip()
-    #     if texto:
-    #         self.clipboard_clear()
-    #         self.clipboard_append(texto)
-    #         messagebox.showinfo(
-    #             "Copiado", "El texto se ha copiado al portapapeles.")
+            if ruta_pdf:
+                try:
+                    HTML(string=html_content, base_url=os.getcwd()).write_pdf(ruta_pdf)
+                    messagebox.showinfo("Éxito", "La constancia fue exportada correctamente.")
+                except Exception as e:
+                    messagebox.showerror("Error", f"No se pudo exportar el PDF:\n{e}")
+            else:
+                messagebox.showinfo("Cancelado", "Exportación cancelada por el usuario.")
 
     def _eliminar_constancia(self):
         if not self.constancia_list.selection():
@@ -202,7 +223,7 @@ class HistorialConstancias(tk.Toplevel):
 
         if messagebox.askyesno("Eliminar", "¿Seguro que deseas eliminar esta constancia del historial?"):
             self.cursor.execute(
-                "DELETE FROM historial_constancias WHERE id = ?", (constancia_id,))
+                "DELETE FROM constancias WHERE id = ?", (constancia_id,))
             self.conn.commit()
             messagebox.showinfo("Eliminado", "Constancia eliminada.")
             self._load_historial()
@@ -252,9 +273,8 @@ class HistorialConstancias(tk.Toplevel):
     def _aplicar_filtros(self):
         docente = self.docente_entry.get().strip()
         evento = self.evento_entry.get().strip()
-        num_docentes = self.num_docentes_cb.get()
 
-        query = "SELECT id, fecha_emision, contenido FROM historial_constancias WHERE 1=1"
+        query = "SELECT id, fecha_elaboracion, contenido FROM constancias WHERE 1=1"
         params = []
 
         if docente:
@@ -262,14 +282,8 @@ class HistorialConstancias(tk.Toplevel):
             params.append(f"%{docente}%")
 
         if evento:
-            query += " AND contenido LIKE ?"
+            query += " AND id_evento IN (SELECT id FROM eventos WHERE nombre LIKE ?)"
             params.append(f"%{evento}%")
-
-        if num_docentes != "Cualquier cantidad":
-            # Nota: aquí depende cómo guardaste los docentes (en líneas separadas o en una lista)
-            # Supongamos que los separaste con saltos de línea:
-            query += " AND (LENGTH(contenido) - LENGTH(REPLACE(contenido, '\n', '')) + 1) = ?"
-            params.append(int(num_docentes))
 
         self.cursor.execute(query, params)
         resultados = self.cursor.fetchall()
