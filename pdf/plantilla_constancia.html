@@ -1,90 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <style>
+  @page {{
+    size: letter;
+    margin: 0;
+  }}
+  </style>
+
   <meta charset="UTF-8">
   <title>Constancia</title>
 </head>
-<body style="font-family: 'Georgia', serif; margin: 60px; background-color: #fff; color: #000;">
+<body style="font-family: 'Georgia', serif; margin: 0; padding: 0; background-color: #fff; color: #000;">
 
-<div style="width: 794px; height: 1123px; margin: auto; position: relative; padding: 60px; box-sizing: border-box;">
-   <div style="text-align: center;"></divstyle>
-      <img src="{logo}" alt="Logo UAEM" style="width: 100px; margin-bottom: 10px;">
+<div style="width: 794px; height: 1123px; margin: auto; position: relative; padding: 60px; box-sizing: border-box; padding-bottom: 130px;">
+   
+  <div style="text-align: center;"></divstyle>
+      <img src="{logo}" alt="Logo UAEM" style="width: 100px; margin-bottom: 5px;">
    </div>
   
 
-  <div style="text-align: center; font-weight: bold; font-size: 18px; padding: 10px; margin-bottom: 20px;">
+  <div style="text-align: center; font-weight: bold; font-size: 15px; margin-bottom: 20px;">
     {encabezado}
   </div>
 
-  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6; padding: 10px;">
+  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6; ">
     {intro}
   </div>
 
-  <div style="text-align: center; font-weight: bold; font-size: 24px; margin: 40px 0 20px;">
+  <div style="text-align: center; font-weight: bold; font-size: 22px; margin-top: 20px;">
     {titulo}
   </div>
 
   <div style="text-align: center; font-size: 18px; margin-bottom: 20px;">a:<br></div>
 
-  <div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+  <div style="text-align: center; font-size: 18px; font-weight: bold; margin: 10px 0;">
     {docentes}
   </div>
 
-  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6; padding: 10px;">
+  <div style="text-align: justify; margin: 30px auto; max-width: 700px; line-height: 1.6;;">
     {cuerpo}
   </div>
 
-  <div style="text-align: right; margin-top: 40px;">
+  <div style="text-align: right;">
     {cierre}
   </div>
 
-  <div style="text-align: center; margin-top: 60px; font-weight: bold;">
+  <div style="text-align: center; margin-top: 80px; font-weight: bold;">
     {firma}
   </div>
 
-  <!-- Pie de página dividido en 4 columnas -->
-      <div style="
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 110px;
-        display: flex;
-        box-sizing: border-box;
-      ">
+<!-- Pie de página dividido en 4 columnas -->
+  <div style="
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 110px;
+    display: flex;
+    box-sizing: border-box;
+    margin-bottom: 60px;
+  ">
 
-        <!-- Sección 1: texto con fondo -->
-        <div style="
-          width: 40%;
-          background-image: url('{fondo_pie}');
-          opacity: 0.8;
-          background-color: green;
-          background-repeat: repeat-y;
-          background-size: contain;
-          color: white;
-          font-size: 11px;
-          padding: 10px;
-          box-sizing: border-box;
-        ">
-          {pie}
-        </div>
+    <!-- Sección 1: texto con fondo -->
+    <div style="
+      width: 40%;
+      background-image: url('{fondo_pie}');
+      opacity: 0.8;
+      background-color: green;
+      background-repeat: repeat-y;
+      background-size: contain;
+      color: white;
+      font-size: 11px;
+      padding: 10px;
+      box-sizing: border-box;
+    ">
+      {pie}
+    </div>
 
-        <!-- Sección 2: logo PDAMGK -->
-        <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
-          <img src="logo_pdamgk.png" alt="PDAMGK" style="max-height: 80px;">
-        </div>
+    <!-- Sección 2: logo PDAMGK -->
+    <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
+      <img src="logo_pdamgk.png" alt="PDAMGK" style="max-height: 80px;">
+    </div>
 
-        <!-- Sección 3: logo administración -->
-        <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
-          <img src="logo_administracion.png" alt="Administración 2023-2027" style="max-height: 80px;">
-        </div>
+    <!-- Sección 3: logo administración -->
+    <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
+      <img src="logo_administracion.png" alt="Administración 2023-2027" style="max-height: 80px;">
+    </div>
 
-        <!-- Sección 4: logo subdirección -->
-        <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
-          <img src="logo_subdireccion.png" alt="Subdirección Académica" style="max-height: 80px;">
-        </div>
+    <!-- Sección 4: logo subdirección -->
+    <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
+      <img src="logo_subdireccion.png" alt="Subdirección Académica" style="max-height: 80px;">
+    </div>
 
-      </div>
+  </div>
   </div>
 </div>
 </body>

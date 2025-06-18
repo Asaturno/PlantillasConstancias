@@ -72,8 +72,8 @@ def abrir_editor_secciones(datos_constancia):
         "Docentes": f"{datos_constancia['docentes']}",
         "Cuerpo": f"Como {datos_constancia['rol_docente']} en {datos_constancia['nombre_evento']}, actividad llevada a cabo el {datos_constancia['fecha_evento']}.",
         "Cierre": f"Toluca, Estado de México, {datos_constancia['fecha_emision']}",
-        "Firma": f"ATENTAMENTE\nPATRIA CIENCIA Y TRABAJO\n“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca”\n\n\n{datos_constancia['grado_responsable']}\n{datos_constancia['nombre_responsable']}\n{datos_constancia['rol_responsable']}",
-        "Pie": f"C.c.p. Archivo\nZGMV/eez\nCalle Heriberto Enríquez No. 904, esquina Ceboruco,\nCol. Azteca C.P. 50150 Toluca, Estado de México\nTels. 722.217.12.17, 722.212.08.08\nplantelangelmariagaribay@uaemex.mx"
+        "Firma": f"ATENTAMENTE\nPATRIA CIENCIA Y TRABAJO\n“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca”\n\n\n\n\n\n{datos_constancia['grado_responsable']}\n{datos_constancia['nombre_responsable']}\n{datos_constancia['rol_responsable']}",
+        "Pie": f"Calle Heriberto Enríquez No. 904, esquina Ceboruco,\nCol. Azteca C.P. 50150 Toluca, Estado de México\nTels. 722.217.12.17, 722.212.08.08\nplantelangelmariagaribay@uaemex.mx"
     }
 
     text_widgets = {}
