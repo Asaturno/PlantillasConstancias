@@ -1,13 +1,15 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-import sqlite3
-import hashlib
+from tkinter import ttk
+from PIL import Image, ImageTk
 from ui.gestion_docentes import GestorDocentes
 from ui.gestion_eventos import GestorEventos
 from ui.gestion_responsables import GestorResponsables
 from ui.historial import HistorialConstancias
 from ui.crear_constancia import CrearConstancia
 from ui.gestion_superusuarios import GestorSuperusuarios
+import sqlite3
+import hashlib
+
 
 class MainWindow(tk.Frame):
     def __init__(self, master=None):
@@ -15,138 +17,130 @@ class MainWindow(tk.Frame):
         self.master = master
         self.pack(fill=tk.BOTH, expand=True)
 
-        # Configurar estilo
+        # Cargar fondo
+        self.original_bg = Image.open("Fondo1.png")
+        self.bg_photo = ImageTk.PhotoImage(self.original_bg)
+
+        # Fondo como label
+        self.fondo = tk.Label(self.master, image=self.bg_photo)
+        self.fondo.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Contenedor de botones centrado
+        self.container = ttk.Frame(
+            self.master, padding=20, style="Card.TFrame")
+        self.container.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+        # Estilos
         self.style = ttk.Style()
         self._configurar_estilos()
+
+        # Construcción de UI
         self._build_ui()
 
     def _configurar_estilos(self):
-        """Configura los estilos visuales"""
-        self.style.theme_use('clam')
-        self.style.configure('.', background='#ecf0f1')
-        self.style.configure('TFrame', background='#ecf0f1')
-        self.style.configure('TLabel', background='#ecf0f1',
-                           foreground='#2c3e50', font=('Arial', 10))
-        self.style.configure('TButton', font=('Arial', 10, 'bold'), padding=8)
+        self.style.theme_use("clam")
 
-        # Estilos para botones
-        self.style.map('Primary.TButton',
-                     background=[('active', '#2980b9'), ('!active', '#3498db')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        # Estilos globales
+        self.style.configure("TLabel", background="#ffffff",
+                             foreground="#2c3e50", font=('Arial', 12, 'bold'))
 
-        self.style.map('Success.TButton',
-                     background=[('active', '#27ae60'), ('!active', '#2ecc71')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        # Estilo para los botones por defecto
+        self.style.configure("TButton", font=('Arial', 11),
+                             padding=10, background="#2E5E2E", foreground="white")
+        self.style.map("TButton", background=[("active", "#244B24")])
 
-        self.style.map('Danger.TButton',
-                     background=[('active', '#c0392b'), ('!active', '#e74c3c')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        # 🎯 Estilo especial con hover personalizado
+        self.style.configure("Hover.TButton",
+                             font=('Arial', 11, 'bold'),
+                             padding=10,
+                             background="#2E5E2E",
+                             foreground="white",
+                             borderwidth=2)
 
-        self.style.map('Dark.TButton',
-                     background=[('active', '#1a252f'), ('!active', '#2c3e50')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        self.style.map("Hover.TButton",
+                       background=[("active", "white")],
+                       foreground=[("active", "#2E5E2E")],
+                       bordercolor=[("active", "#a58a42")])  # Este último solo funciona si el sistema lo respeta
+
+        # Frame contenedor
+        self.style.configure("Card.TFrame", background="#ffffff")
 
     def _build_ui(self):
-        """Construye la interfaz de usuario"""
-        # Frame principal
-        main_frame = ttk.Frame(self, padding="20")
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(self.container, text="Sistema de Gestión de Constancias",
+                  font=("Arial", 16, "bold"), foreground="#2E5E2E",
+                  background="#ffffff").pack(pady=(0, 20))
 
-        # Título
-        title = ttk.Label(main_frame,
-                        text="Sistema de Gestión de Constancias",
-                        font=("Arial", 16, "bold"),
-                        foreground="#2c3e50")
-        title.pack(pady=(0, 20))
-
-        # Botones
-        btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(expand=True)
+        btn_frame = ttk.Frame(self.container, style="Card.TFrame")
+        btn_frame.pack()
 
         buttons = [
-            ("Gestión de Docentes", self._acceder_gestion_docentes, 'Primary.TButton'),
-            ("Gestión de Responsables", self._acceder_gestion_responsables, 'Success.TButton'),
-            ("Gestión de Eventos", self._acceder_gestion_eventos, 'Dark.TButton'),
-            ("Crear Constancia", self.abrir_crear_constancia, 'Success.TButton'),
-            ("Gestión de Constancias", self.abrir_historial, 'Success.TButton'),
-            ("Gestión de Superusuarios", self._acceder_gestion_superusuarios, 'Danger.TButton')
+            ("Gestión de Docentes", self._acceder_gestion_docentes),
+            ("Gestión de Responsables", self._acceder_gestion_responsables),
+            ("Gestión de Eventos", self._acceder_gestion_eventos),
+            ("Crear Constancia", self.abrir_crear_constancia),
+            ("Gestión de Constancias", self.abrir_historial),
+            ("Gestión de Superusuarios", self._acceder_gestion_superusuarios),
         ]
 
-        for text, command, style in buttons:
-            btn = ttk.Button(
-                btn_frame,
-                text=text,
-                command=command,
-                style=style,
-                width=25,
-                padding=10
-            )
-            btn.pack(pady=8, ipady=5, fill=tk.X)
+        for text, command in buttons:
+            ttk.Button(btn_frame, text=text, command=command,
+                       style="Hover.TButton", width=25).pack(pady=6, fill=tk.X)
 
-        # Botón salir
-        ttk.Button(
-            btn_frame,
-            text="Salir",
-            command=self.master.quit,
-            style='Danger.TButton'
-        ).pack(pady=(20, 0), ipady=5, fill=tk.X)
+        ttk.Button(btn_frame, text="Salir", command=self.master.quit,
+                   style="Hover.TButton").pack(pady=(20, 0), fill=tk.X)
 
     def _autenticar_superusuario(self):
-        """Muestra diálogo para autenticar superusuario"""
         dialog = tk.Toplevel(self)
         dialog.title("Autenticación requerida")
-        dialog.geometry("400x220")
+        dialog.geometry("400x230")
         dialog.resizable(False, False)
-        
-        main_frame = ttk.Frame(dialog, padding="20")
-        main_frame.pack(fill=tk.BOTH, expand=True)
-        
-        ttk.Label(main_frame, text="Ingrese credenciales de superusuario", 
-                 font=('Arial', 11)).pack(pady=(0, 15))
-        
-        form_frame = ttk.Frame(main_frame)
-        form_frame.pack(fill=tk.X, pady=5)
-        
-        ttk.Label(form_frame, text="Usuario:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
+        dialog.configure(bg="#e9e6df")
+
+        frame = ttk.Frame(dialog, padding="20")
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="🔐 Ingreso de Superusuario",
+                  font=("Arial", 13, "bold"),
+                  foreground="#2E5E2E").pack(pady=(0, 15))
+
         nombre_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=nombre_var, width=25).grid(row=0, column=1, sticky="w", padx=5, pady=5)
-        
-        ttk.Label(form_frame, text="Contraseña:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
         contrasena_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=contrasena_var, show="*", width=25).grid(row=1, column=1, sticky="w", padx=5, pady=5)
-        
-        btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X, pady=(15, 0))
-        
+
+        form_frame = ttk.Frame(frame)
+        form_frame.pack(pady=5)
+
+        ttk.Label(form_frame, text="Usuario:").grid(
+            row=0, column=0, sticky="e", padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=nombre_var,
+                  width=25).grid(row=0, column=1, padx=5)
+
+        ttk.Label(form_frame, text="Contraseña:").grid(
+            row=1, column=0, sticky="e", padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=contrasena_var,
+                  show="*", width=25).grid(row=1, column=1, padx=5)
+
         resultado = {'autenticado': False}
-        
+
         def verificar():
             conn = sqlite3.connect("data/constancias.db")
             cursor = conn.cursor()
-            
-            contrasena_hash = hashlib.sha256(contrasena_var.get().encode()).hexdigest()
-            cursor.execute(
-                "SELECT id FROM usuarios WHERE nombre = ? AND contrasena = ? AND es_superusuario = 1",
-                (nombre_var.get(), contrasena_hash)
-            )
-            
+            hash_pass = hashlib.sha256(
+                contrasena_var.get().encode()).hexdigest()
+            cursor.execute("SELECT id FROM usuarios WHERE nombre=? AND contrasena=? AND es_superusuario=1",
+                           (nombre_var.get(), hash_pass))
             if cursor.fetchone():
                 resultado['autenticado'] = True
                 dialog.destroy()
             else:
-                messagebox.showerror("Error", "Credenciales incorrectas", parent=dialog)
-            
+                tk.messagebox.showerror("Error", "Credenciales incorrectas")
             conn.close()
-        
-        ttk.Button(btn_frame, text="Aceptar", command=verificar,
-                  style='Primary.TButton').pack(side=tk.LEFT, padx=10)
-        ttk.Button(btn_frame, text="Cancelar", command=dialog.destroy,
-                  style='Danger.TButton').pack(side=tk.RIGHT, padx=10)
-        
+
+        ttk.Button(frame, text="Aceptar", command=verificar,
+                   style="Hover.TButton").pack(pady=15)
+
         dialog.transient(self.master)
         dialog.grab_set()
         self.wait_window(dialog)
-        
         return resultado['autenticado']
 
     def _acceder_gestion_docentes(self):

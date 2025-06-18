@@ -13,24 +13,25 @@ import unicodedata
 DB_PATH = os.path.join("data", "constancias.db")
 
 # TEXTO_BASE = """[LOGO DE LA ESCUELA]
- 
+
 # El que suscribe, {rol_responsable}, otorga la presente:
- 
+
 # CONSTANCIA DE {tipo_constancia}
 # a:
 # {docentes}
- 
+
 # Como {rol_docente} en {nombre_evento}, llevado a cabo el {fecha_evento}
- 
+
 # Toluca, Estado de México, {fecha_emision}
 # Atentamente
 # [ESLOGAN DE LA ESCUELA]
 # [PLACA CONMEMORATIVA]
- 
+
 # {grado_responsable}
 # {nombre_responsable}
 # {rol_responsable}
 # """
+
 
 def normalize_text(text):
     """Elimina acentos y convierte a mayúsculas para búsqueda sin sensibilidad a acentos"""
@@ -40,8 +41,10 @@ def normalize_text(text):
     text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
     return text.upper()
 
+
 class CrearConstancia(tk.Toplevel):
     datos_constancia = {}
+
     def __init__(self, master=None, historial=None):
         super().__init__(master)
         self.historial = historial
@@ -51,31 +54,35 @@ class CrearConstancia(tk.Toplevel):
 
         self.style = ttk.Style()
         self._configurar_estilos()
+
         self._build_ui()
         self._load_data()
 
     def _configurar_estilos(self):
         """Configura los estilos visuales"""
         self.style.theme_use('clam')
-        self.style.configure('.', background='#ecf0f1')
-        self.style.configure('TFrame', background='#ecf0f1')
-        self.style.configure('TLabel', background='#ecf0f1',
-                           foreground='#2c3e50', font=('Arial', 10))
-        self.style.configure('TButton', font=('Arial', 10, 'bold'), padding=8)
-        self.style.configure('TEntry', font=('Arial', 10))
-        self.style.configure('TCombobox', font=('Arial', 10))
+        self.style.configure('.', background='#f5f5f5')
+        self.style.configure('TFrame', background='#f5f5f5')
+        self.style.configure('TLabel', background='#f5f5f5',
+                             foreground='#333333', font=('Arial', 10))
+        self.style.configure('Treeview', font=('Arial', 10), rowheight=25,
+                             fieldbackground='#ffffff', foreground='#333333')
+        self.style.configure('Treeview.Heading', font=('Arial', 10, 'bold'),
+                             background='#3498db', foreground='white')
+        self.style.configure('TEntry', font=('Arial', 10), padding=5)
 
-        self.style.map('Primary.TButton',
-                     background=[('active', '#2980b9'), ('!active', '#3498db')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        # Estilo global para todos los botones
+        self.style.configure("TButton",
+                             font=('Arial', 11),
+                             padding=10,
+                             background="#2E5E2E",
+                             foreground="white",
+                             borderwidth=2)
 
-        self.style.map('Success.TButton',
-                     background=[('active', '#27ae60'), ('!active', '#2ecc71')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
-
-        self.style.map('Danger.TButton',
-                     background=[('active', '#c0392b'), ('!active', '#e74c3c')],
-                     foreground=[('active', 'white'), ('!active', 'white')])
+        self.style.map("TButton",
+                       background=[('active', 'white')],
+                       foreground=[('active', '#2E5E2E')],
+                       bordercolor=[('active', '#a58a42')])
 
     def _build_ui(self):
         main_frame = ttk.Frame(self, padding="10")
@@ -95,50 +102,53 @@ class CrearConstancia(tk.Toplevel):
 
         # Frame para docentes con buscador y seleccionados
         docente_frame = ttk.Frame(form_frame)
-        docente_frame.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
-        
+        docente_frame.grid(row=0, column=0, columnspan=2,
+                           sticky="nsew", padx=5, pady=5)
+
         # Frame principal horizontal
         docente_main_frame = ttk.Frame(docente_frame)
         docente_main_frame.pack(fill=tk.BOTH, expand=True)
-        
+
         # Frame para buscador y lista (izquierda)
         search_list_frame = ttk.Frame(docente_main_frame)
         search_list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
+
         # Buscador
         search_frame = ttk.Frame(search_list_frame)
         search_frame.pack(fill=tk.X)
-        
+
         self.search_var = tk.StringVar()
-        ttk.Label(search_frame, text="Buscar docente:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(search_frame, text="Buscar docente:").pack(
+            side=tk.LEFT, padx=(0, 5))
         search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        ttk.Button(search_frame, text="🔍", width=3, 
-                  command=self._filter_docentes).pack(side=tk.LEFT, padx=(5, 0))
-        
+
+        ttk.Button(search_frame, text="🔍", width=3,
+                   command=self._filter_docentes).pack(side=tk.LEFT, padx=(5, 0))
+
         # Listbox con scrollbar
         list_scroll_frame = ttk.Frame(search_list_frame)
         list_scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
+
         scrollbar = ttk.Scrollbar(list_scroll_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
+
         self.docentes_listbox = tk.Listbox(
-            list_scroll_frame, 
-            selectmode=tk.MULTIPLE, 
-            height=5, 
+            list_scroll_frame,
+            selectmode=tk.MULTIPLE,
+            height=5,
             exportselection=False,
             yscrollcommand=scrollbar.set,
             font=('Arial', 10)
         )
         self.docentes_listbox.pack(fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.docentes_listbox.yview)
-        
+
         # Frame para docentes seleccionados (derecha)
-        selected_frame = ttk.LabelFrame(docente_main_frame, text="Docentes Seleccionados", width=250)
+        selected_frame = ttk.LabelFrame(
+            docente_main_frame, text="Docentes Seleccionados", width=250)
         selected_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(10, 0))
-        
+
         self.selected_listbox = tk.Listbox(
             selected_frame,
             selectmode=tk.SINGLE,
@@ -146,31 +156,35 @@ class CrearConstancia(tk.Toplevel):
             font=('Arial', 10)
         )
         self.selected_listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
+
         btn_remove_frame = ttk.Frame(selected_frame)
         btn_remove_frame.pack(fill=tk.X, pady=(0, 5))
-        
+
         ttk.Button(
-            btn_remove_frame, 
-            text="Quitar seleccionado", 
+            btn_remove_frame,
+            text="Quitar seleccionado",
             command=self._quitar_docente,
             style='Danger.TButton'
         ).pack(side=tk.LEFT, expand=True)
-        
+
         # Selector docentes
-        self.docentes_listbox.bind('<<ListboxSelect>>', self._agregar_docentes_seleccionados)
-        self.search_var.trace_add("write", lambda *args: self._filter_docentes())
+        self.docentes_listbox.bind(
+            '<<ListboxSelect>>', self._agregar_docentes_seleccionados)
+        self.search_var.trace_add(
+            "write", lambda *args: self._filter_docentes())
 
         # Evento
         ttk.Label(form_frame, text="Evento:").grid(
             row=1, column=0, sticky="e", padx=5, pady=5)
-        self.evento_cb = ttk.Combobox(form_frame, state="readonly", font=('Arial', 10))
+        self.evento_cb = ttk.Combobox(
+            form_frame, state="readonly", font=('Arial', 10))
         self.evento_cb.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
         # Responsable
         ttk.Label(form_frame, text="Responsable:").grid(
             row=2, column=0, sticky="e", padx=5, pady=5)
-        self.responsable_cb = ttk.Combobox(form_frame, state="readonly", font=('Arial', 10))
+        self.responsable_cb = ttk.Combobox(
+            form_frame, state="readonly", font=('Arial', 10))
         self.responsable_cb.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         # Tipo de constancia
@@ -200,7 +214,7 @@ class CrearConstancia(tk.Toplevel):
         # ttk.Button(btn_frame, text="Prellenar texto", command=self._prellenar_texto,
         #          style='Primary.TButton').pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Generar vista previa", command=self._generar_plantilla,
-                 style='Success.TButton').pack(side=tk.LEFT, padx=5)
+                   style='Success.TButton').pack(side=tk.LEFT, padx=5)
 
         # # Pestaña de edición
         # edit_frame = ttk.Frame(notebook)
@@ -238,9 +252,9 @@ class CrearConstancia(tk.Toplevel):
     def _filter_docentes(self):
         """Filtra los docentes según el texto del buscador"""
         search_text = normalize_text(self.search_var.get())
-        
+
         self.docentes_listbox.delete(0, tk.END)
-        
+
         if not search_text:
             # Mostrar todos si no hay texto de búsqueda
             for _, nombre in self.all_docentes:
@@ -256,7 +270,8 @@ class CrearConstancia(tk.Toplevel):
         cursor = conn.cursor()
 
         # Docentes (guardamos todos para filtrar)
-        cursor.execute("SELECT id, grado || ' ' || nombre FROM docentes ORDER BY nombre")
+        cursor.execute(
+            "SELECT id, grado || ' ' || nombre FROM docentes ORDER BY nombre")
         self.all_docentes = cursor.fetchall()
         self._filter_docentes()  # Mostrar todos inicialmente
 
@@ -296,7 +311,8 @@ class CrearConstancia(tk.Toplevel):
         evento_nombre, fecha_evento = evento_str.split(' (')
         fecha_evento = fecha_evento.replace(")", "")
 
-        responsable_id, responsable_str = self.responsables[self.responsable_cb.current()]
+        responsable_id, responsable_str = self.responsables[self.responsable_cb.current(
+        )]
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute(

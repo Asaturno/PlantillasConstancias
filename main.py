@@ -6,13 +6,15 @@ import hashlib
 from ui.main_window import MainWindow
 from ui.crear_primer_superusuario import CrearPrimerSuperusuario
 
+
 def verificar_superusuario_inicial():
     """Verifica si existe al menos un superusuario en la base de datos"""
     conn = None
     try:
         conn = sqlite3.connect("data/constancias.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM usuarios WHERE es_superusuario = 1")
+        cursor.execute(
+            "SELECT COUNT(*) FROM usuarios WHERE es_superusuario = 1")
         count = cursor.fetchone()[0]
         return count > 0
     except sqlite3.Error as e:
@@ -22,46 +24,50 @@ def verificar_superusuario_inicial():
         if conn:
             conn.close()
 
+
 def main():
-    # Crear base de datos y tablas si no existen
     from database.db_setup import crear_base_de_datos
     crear_base_de_datos()
-    
+
     root = tk.Tk()
-    root.withdraw()  # Ocultar ventana principal temporalmente
-    
-    # Verificar si existe al menos un superusuario
+    root.withdraw()  # Ocultar hasta que esté lista la interfaz
+
+    # Verificar superusuario inicial
     if not verificar_superusuario_inicial():
-        # Mostrar ventana para crear primer superusuario
         messagebox.showinfo(
             "Primer inicio",
             "No se encontraron superusuarios. Debe crear un superusuario inicial."
         )
-        
-        # Mostrar diálogo para crear superusuario
         crear_super = CrearPrimerSuperusuario(root)
         root.wait_window(crear_super)
-        
-        # Verificar nuevamente después de cerrar el diálogo
+
         if not verificar_superusuario_inicial():
             messagebox.showerror(
-                "Error", 
+                "Error",
                 "No se creó ningún superusuario. La aplicación no puede continuar."
             )
             root.destroy()
             return
-    
-    # Mostrar ventana principal
-    root.deiconify()
+
+    # Establecer configuración base
     root.title("Sistema de Constancias")
-    root.geometry("400x500")  # Tamaño ajustado para mejor visualización
-    
-    # Configurar estilo inicial
-    style = ttk.Style()
-    style.theme_use('clam')
-    
+    root.geometry("900x650")  # ← Aumentamos tamaño para mejor render inicial
+
+    # Crear la ventana principal (pero aún no mostrarla)
     app = MainWindow(master=root)
+
+    # Forzar que todo se actualice internamente antes de mostrar
+    root.update_idletasks()
+    root.deiconify()
+    root.event_generate("<Configure>")  # ← Forzar evento de redimensionamiento
+
+    # Mostrar y mantener al frente
+    root.lift()
+    root.focus_force()
+
+    # Loop principal
     app.mainloop()
+
 
 if __name__ == "__main__":
     main()
