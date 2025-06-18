@@ -62,26 +62,26 @@ def crear_base_de_datos():
             );
         ''')
 
-        # Tabla intermedia para docentes en constancias
-        cursor.execute(''' 
-            CREATE TABLE IF NOT EXISTS constancia_docente (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                id_constancia INTEGER,
-                id_docente INTEGER,
-                rol_en_evento TEXT NOT NULL,
-                FOREIGN KEY (id_constancia) REFERENCES constancias(id),
-                FOREIGN KEY (id_docente) REFERENCES docentes(id)
-            );
-        ''')
+        # # Tabla intermedia para docentes en constancias
+        # cursor.execute(''' 
+        #     CREATE TABLE IF NOT EXISTS constancia_docente (
+        #         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        #         id_constancia INTEGER,
+        #         id_docente INTEGER,
+        #         rol_en_evento TEXT NOT NULL,
+        #         FOREIGN KEY (id_constancia) REFERENCES constancias(id),
+        #         FOREIGN KEY (id_docente) REFERENCES docentes(id)
+        #     );
+        # # ''')
 
-        # Tabla de historial de constancias
-        cursor.execute(''' 
-            CREATE TABLE IF NOT EXISTS historial_constancias (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                contenido TEXT NOT NULL,
-                fecha_emision TEXT NOT NULL
-            );
-        ''')
+        # # Tabla de historial de constancias
+        # cursor.execute(''' 
+        #     CREATE TABLE IF NOT EXISTS historial_constancias (
+        #         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        #         contenido TEXT NOT NULL,
+        #         fecha_emision TEXT NOT NULL
+        #     );
+        # ''')
 
         # Crear superusuario inicial si no existe
         cursor.execute("SELECT COUNT(*) FROM usuarios WHERE es_superusuario = 1")

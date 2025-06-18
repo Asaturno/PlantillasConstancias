@@ -50,7 +50,12 @@ class ConstanciaEditorAPI:
         conn.commit()
         conn.close()
 
+import base64
 
+def convertir_imagen_base64(ruta):
+    with open(ruta, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
 
 def vista_previa(text_widgets, datos_constancia):
     # Cargar plantilla HTML
@@ -61,12 +66,25 @@ def vista_previa(text_widgets, datos_constancia):
         plantilla = f.read()
 
     # Ruta absoluta al logo
-    logo_path = os.path.abspath("logo.png")
+    ruta_base = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(ruta_base, "..", "assets", "logo.png")
+    logo_path = os.path.abspath(logo_path)
     logo_url = f"file:///{logo_path.replace(os.sep, '/')}"
+    print("Logo URL:", logo_url)
 
+    logo_base64 = convertir_imagen_base64(logo_path)
+
+    # Pie de pagina 
+    ruta_base = os.path.dirname(os.path.abspath(__file__))
+    piebg_path = os.path.join(ruta_base, "..", "assets", "descarga_e.jpg")
+    piebg_path = os.path.abspath(piebg_path)
+    piebg_url = f"file:///{piebg_path.replace(os.sep, '/')}"
+    print("Logo URL:", piebg_url)
+
+    piebg_base64 = convertir_imagen_base64(piebg_path)
     # Reemplazo de marcadores con datos reales
     html_renderizado = plantilla.format(
-        logo=logo_url,
+        logo=logo_base64,
         encabezado=text_widgets['Encabezado'],
         intro=text_widgets['Introducción'],
         titulo=text_widgets['Título'],
@@ -74,7 +92,8 @@ def vista_previa(text_widgets, datos_constancia):
         cuerpo=text_widgets['Cuerpo'],
         cierre=text_widgets['Cierre'],
         firma=text_widgets['Firma'],
-        pie=text_widgets['Pie']
+        pie=text_widgets['Pie'],
+        fondo_pie=piebg_base64
     )
 
     crear_visa_previa(html_renderizado, datos_constancia)
