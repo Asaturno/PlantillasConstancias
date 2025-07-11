@@ -2,6 +2,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
 import hashlib
+import os
+
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
+
 
 
 class GestorSuperusuarios(tk.Toplevel):
@@ -13,7 +17,7 @@ class GestorSuperusuarios(tk.Toplevel):
         self.style = ttk.Style()
         self._configurar_estilos()
 
-        self.conn = sqlite3.connect("data/constancias.db")
+        self.conn = sqlite3.connect(DB_PATH)
         self.cursor = self.conn.cursor()
         self.modo_edicion = False
         self.registro_id = None

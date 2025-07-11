@@ -2,7 +2,8 @@ import sqlite3
 import os
 import hashlib
 
-DB_PATH = os.path.join("data", "constancias.db")
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
+
 
 def crear_base_de_datos():
     with sqlite3.connect(DB_PATH) as conn:

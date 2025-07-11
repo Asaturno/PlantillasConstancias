@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter.scrolledtext import ScrolledText
+from tkinter import BooleanVar, Checkbutton
 import sqlite3
 import os
 from datetime import datetime
@@ -10,7 +11,8 @@ from tkinter import filedialog
 from ui.vista_previa_html import abrir_editor_secciones
 import unicodedata
 
-DB_PATH = os.path.join("data", "constancias.db")
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
+
 
 # TEXTO_BASE = """[LOGO DE LA ESCUELA]
 
@@ -207,6 +209,11 @@ class CrearConstancia(tk.Toplevel):
         self.fecha_entry.insert(0, datetime.today().strftime("%Y-%m-%d"))
         self.fecha_entry.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
 
+        #Checkbox
+        self.avalada = tk.BooleanVar(value=False)
+        chk = Checkbutton(form_frame, text="Avalada por HH", variable=self.avalada)
+        chk.grid(row=6, column=1, padx=5, pady=5, sticky="ew")
+
         # Botones de acción
         btn_frame = ttk.Frame(config_frame)
         btn_frame.pack(fill=tk.X, padx=5, pady=10)
@@ -293,6 +300,7 @@ class CrearConstancia(tk.Toplevel):
         tipo = self.tipo_entry.get().strip()
         rol_docente = self.rol_docente_entry.get().strip()
         fecha_emision = self.fecha_entry.get().strip()
+        avalada = self.avalada.get()
 
         if not tipo or not rol_docente or not self.evento_cb.current() >= 0 or not self.responsable_cb.current() >= 0:
             messagebox.showwarning(
@@ -331,7 +339,8 @@ class CrearConstancia(tk.Toplevel):
             'fecha_evento': fecha_evento,
             'fecha_emision': fecha_emision,
             'grado_responsable': grado_responsable,
-            'nombre_responsable': nombre_responsable
+            'nombre_responsable': nombre_responsable,
+            'avalada': avalada
         }
         self.datos_constancia = datos
 

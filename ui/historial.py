@@ -11,7 +11,8 @@ from weasyprint import HTML
 from tkinter import filedialog, messagebox
 
 
-DB_PATH = os.path.join("data", "constancias.db")
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
+
 
 
 class HistorialConstancias(tk.Toplevel):
@@ -32,28 +33,29 @@ class HistorialConstancias(tk.Toplevel):
     def _configurar_estilos(self):
         """Configura los estilos visuales"""
         self.style.theme_use('clam')
-        self.style.configure('.', background='#f5f5f5')
-        self.style.configure('TFrame', background='#f5f5f5')
-        self.style.configure('TLabel', background='#f5f5f5',
-                             foreground='#333333', font=('Arial', 10))
-        self.style.configure('Treeview', font=('Arial', 10), rowheight=25,
-                             fieldbackground='#ffffff', foreground='#333333')
+        self.style.configure('.', background='#ecf0f1')
+        self.style.configure('TFrame', background='#ecf0f1')
+        self.style.configure('TLabel', background='#ecf0f1',
+                             foreground='#2c3e50', font=('Arial', 10))
+        self.style.configure('TButton', font=('Arial', 10, 'bold'), padding=8)
+        self.style.configure('Treeview', font=('Arial', 10), rowheight=25)
         self.style.configure('Treeview.Heading', font=('Arial', 10, 'bold'),
-                             background='#3498db', foreground='white')
-        self.style.configure('TEntry', font=('Arial', 10), padding=5)
+                             background='#2c3e50', foreground='white')
 
-        # Estilo global para todos los botones
-        self.style.configure("TButton",
-                             font=('Arial', 11),
-                             padding=10,
-                             background="#2E5E2E",
-                             foreground="white",
-                             borderwidth=2)
+        self.style.map('Primary.TButton',
+                       background=[('active', '#2980b9'),
+                                   ('!active', '#3498db')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
 
-        self.style.map("TButton",
-                       background=[('active', 'white')],
-                       foreground=[('active', '#2E5E2E')],
-                       bordercolor=[('active', '#a58a42')])
+        self.style.map('Danger.TButton',
+                       background=[('active', '#c0392b'),
+                                   ('!active', '#e74c3c')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
+
+        self.style.map('Success.TButton',
+                       background=[('active', '#27ae60'),
+                                   ('!active', '#2ecc71')],
+                       foreground=[('active', 'white'), ('!active', 'white')])
 
     def _build_ui(self):
         main_frame = ttk.Frame(self, padding="10")
@@ -78,6 +80,7 @@ class HistorialConstancias(tk.Toplevel):
             row=1, column=0, sticky='e')
         self.evento_entry = ttk.Entry(filter_frame)
         self.evento_entry.grid(row=1, column=1, padx=5, pady=2)
+
 
         ttk.Button(filter_frame, text="Buscar", command=self._aplicar_filtros).grid(
             row=3, column=0, columnspan=2, pady=5)
@@ -123,8 +126,7 @@ class HistorialConstancias(tk.Toplevel):
         ttk.Label(right_frame, text="Vista previa",
                   font=('Arial', 11, 'bold')).pack(pady=5)
 
-        self.preview_btn = ttk.Button(
-            right_frame, text="Abrir vista previa en navegador", command=self._vista_previa_html)
+        self.preview_btn = ttk.Button(right_frame, text="Abrir vista previa en navegador", command=self._vista_previa_html)
         self.preview_btn.pack(pady=10)
         # self.text_area = ScrolledText(
         #     right_frame, wrap=tk.WORD, font=('Arial', 11))
@@ -144,13 +146,12 @@ class HistorialConstancias(tk.Toplevel):
                    style='Danger.TButton').pack(side=tk.RIGHT, padx=5)
 
     def _load_historial(self):
-        self.cursor.execute(
-            "SELECT id, fecha_elaboracion FROM constancias ORDER BY id DESC")
+        self.cursor.execute("SELECT id, fecha_elaboracion FROM constancias ORDER BY id DESC")
         self.registros = self.cursor.fetchall()
 
         for item in self.constancia_list.get_children():
             self.constancia_list.delete(item)
-
+              
         for reg in self.registros:
             self.constancia_list.insert('', 'end', values=(reg[0], reg[1]))
 
@@ -172,15 +173,13 @@ class HistorialConstancias(tk.Toplevel):
 
     def _vista_previa_html(self):
         if not self.constancia_list.selection():
-            messagebox.showwarning(
-                "Advertencia", "Selecciona una constancia para ver la vista previa.")
+            messagebox.showwarning("Advertencia", "Selecciona una constancia para ver la vista previa.")
             return
-
+        
         selected_item = self.constancia_list.selection()[0]
         constancia_id = self.constancia_list.item(selected_item)['values'][0]
-
-        self.cursor.execute(
-            "SELECT html FROM constancias WHERE id = ?", (constancia_id,))
+        
+        self.cursor.execute("SELECT html FROM constancias WHERE id = ?", (constancia_id,))
         resultado = self.cursor.fetchone()
         if resultado:
             html_content = resultado[0]
@@ -188,39 +187,33 @@ class HistorialConstancias(tk.Toplevel):
                 f.write(html_content)
                 webbrowser.open('file://' + os.path.abspath(f.name))
 
+
     def _exportar_pdf(self):
         if not self.constancia_list.selection():
-            messagebox.showwarning(
-                "Advertencia", "Selecciona una constancia para ver la vista previa.")
+            messagebox.showwarning("Advertencia", "Selecciona una constancia para ver la vista previa.")
             return
-
+        
         selected_item = self.constancia_list.selection()[0]
         constancia_id = self.constancia_list.item(selected_item)['values'][0]
-
-        self.cursor.execute(
-            "SELECT html FROM constancias WHERE id = ?", (constancia_id,))
+        
+        self.cursor.execute("SELECT html FROM constancias WHERE id = ?", (constancia_id,))
         resultado = self.cursor.fetchone()
         if resultado:
             html_content = resultado[0]
 
             # Pedir ruta de guardado
             ruta_pdf = filedialog.asksaveasfilename(defaultextension=".pdf",
-                                                    filetypes=[
-                                                        ("Archivos PDF", "*.pdf")],
+                                                    filetypes=[("Archivos PDF", "*.pdf")],
                                                     title="Guardar constancia como PDF")
 
             if ruta_pdf:
                 try:
-                    HTML(string=html_content, base_url=os.getcwd()
-                         ).write_pdf(ruta_pdf)
-                    messagebox.showinfo(
-                        "Éxito", "La constancia fue exportada correctamente.")
+                    HTML(string=html_content, base_url=os.getcwd()).write_pdf(ruta_pdf)
+                    messagebox.showinfo("Éxito", "La constancia fue exportada correctamente.")
                 except Exception as e:
-                    messagebox.showerror(
-                        "Error", f"No se pudo exportar el PDF:\n{e}")
+                    messagebox.showerror("Error", f"No se pudo exportar el PDF:\n{e}")
             else:
-                messagebox.showinfo(
-                    "Cancelado", "Exportación cancelada por el usuario.")
+                messagebox.showinfo("Cancelado", "Exportación cancelada por el usuario.")
 
     def _eliminar_constancia(self):
         if not self.constancia_list.selection():

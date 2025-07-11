@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
 import hashlib
+import os
+
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
 
 
 class CrearPrimerSuperusuario(tk.Toplevel):
@@ -105,7 +108,7 @@ class CrearPrimerSuperusuario(tk.Toplevel):
 
         conn = None
         try:
-            conn = sqlite3.connect("data/constancias.db")
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
             # Verificar si ya existe un superusuario

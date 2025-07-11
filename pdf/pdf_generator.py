@@ -4,7 +4,9 @@ from weasyprint import HTML
 from tkinter import filedialog, messagebox
 import sqlite3
 
-DB_PATH = os.path.join("data", "constancias.db")
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
+
+
 
 class ConstanciaEditorAPI:
     def __init__(self, html_renderizado, datos_constancia):

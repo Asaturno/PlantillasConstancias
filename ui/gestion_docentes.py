@@ -3,6 +3,9 @@ from tkinter import ttk, messagebox
 import sqlite3
 import unicodedata
 import re
+import os
+
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
 
 
 def strip_accents_and_upper(texto):
@@ -25,7 +28,7 @@ class GestorDocentes(tk.Toplevel):
         self._configurar_estilos()
 
         # Conexión a la base de datos
-        self.conn = sqlite3.connect("data/constancias.db")
+        self.conn = sqlite3.connect(DB_PATH)
         self.cursor = self.conn.cursor()
         self.modo_edicion = False
         self.registro_id = None

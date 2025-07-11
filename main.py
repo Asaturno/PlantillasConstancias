@@ -5,13 +5,15 @@ import sqlite3
 import hashlib
 from ui.main_window import MainWindow
 from ui.crear_primer_superusuario import CrearPrimerSuperusuario
+import os
 
+DB_PATH = os.path.expanduser(r"C:/Users/aleja/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db")
 
 def verificar_superusuario_inicial():
     """Verifica si existe al menos un superusuario en la base de datos"""
     conn = None
     try:
-        conn = sqlite3.connect("data/constancias.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT COUNT(*) FROM usuarios WHERE es_superusuario = 1")

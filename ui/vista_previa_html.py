@@ -65,16 +65,21 @@ def abrir_editor_secciones(datos_constancia):
     canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
 
     # ---------- SECCIONES ----------
+    cuerpo = (f"Como {datos_constancia['rol_docente']} en {datos_constancia['nombre_evento']}, actividad llevada a cabo el {datos_constancia['fecha_evento']}.")
+    if datos_constancia['avalada']:
+        cuerpo += (f"\n\nActividad avalada por los H.H. Consejos Académico y de Gobierno, ambos en sesión ordinaria, celebradas el {datos_constancia['fecha_evento']}")
+
     secciones = {
         "Encabezado": f"Universidad Autónoma del Estado de México",
         "Introducción": f"El que suscribe, {datos_constancia['rol_responsable']}, otorga la presente:",
         "Título": f"Constancia de {datos_constancia['tipo']}",
         "Docentes": f"{datos_constancia['docentes']}",
-        "Cuerpo": f"Como {datos_constancia['rol_docente']} en {datos_constancia['nombre_evento']}, actividad llevada a cabo el {datos_constancia['fecha_evento']}.",
+        "Cuerpo": cuerpo,
         "Cierre": f"Toluca, Estado de México, {datos_constancia['fecha_emision']}",
         "Firma": f"ATENTAMENTE\nPATRIA CIENCIA Y TRABAJO\n“2025, 195 años de la apertura del Instituto Literario en la Ciudad de Toluca”\n\n\n\n\n\n{datos_constancia['grado_responsable']}\n{datos_constancia['nombre_responsable']}\n{datos_constancia['rol_responsable']}",
         "Pie": f"Calle Heriberto Enríquez No. 904, esquina Ceboruco,\nCol. Azteca C.P. 50150 Toluca, Estado de México\nTels. 722.217.12.17, 722.212.08.08\nplantelangelmariagaribay@uaemex.mx"
     }
+
 
     text_widgets = {}
 

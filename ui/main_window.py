@@ -9,6 +9,9 @@ from ui.crear_constancia import CrearConstancia
 from ui.gestion_superusuarios import GestorSuperusuarios
 import sqlite3
 import hashlib
+import os
+
+DB_PATH = os.path.expanduser("~") + "/OneDrive - Universidad Autónoma del Estado de México/UAEM/Proyecto Constancias/constancias.db"
 
 
 class MainWindow(tk.Frame):
@@ -122,7 +125,7 @@ class MainWindow(tk.Frame):
         resultado = {'autenticado': False}
 
         def verificar():
-            conn = sqlite3.connect("data/constancias.db")
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             hash_pass = hashlib.sha256(
                 contrasena_var.get().encode()).hexdigest()
